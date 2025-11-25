@@ -2,21 +2,37 @@
 import { me, updateProfile, changePassword, uploadAvatar } from '../controllers/user.controller.js';
 
 export default [
-  { method: 'GET', path: '/me', options: { auth: 'jwt' }, handler: me },
-  { method: 'PATCH', path: '/me', options: { auth: 'jwt' }, handler: updateProfile },
-  { method: 'PATCH', path: '/me/password', options: { auth: 'jwt' }, handler: changePassword },
+  // --- profil dasar ---
+  {
+    method: 'GET',
+    path: '/me',
+    options: { auth: 'jwt' },      // ⬅️ ganti 'jwt' kalau di server.js namanya beda
+    handler: me,
+  },
+  {
+    method: 'PATCH',
+    path: '/me',
+    options: { auth: 'jwt' },
+    handler: updateProfile,
+  },
+  {
+    method: 'PATCH',
+    path: '/me/password',
+    options: { auth: 'jwt' },
+    handler: changePassword,
+  },
 
+  // --- upload avatar ---
   {
     method: 'POST',
     path: '/me/avatar',
     options: {
-      auth: 'jwt',
+      auth: 'jwt',                 // ⬅️ sama persis dengan GET /me
       payload: {
-        parse: true,                 // parse body
-        output: 'stream',            // kirim file sbg stream ke handler
-        multipart: { output: 'stream' }, // terima multipart dari semua browser
-        maxBytes: 2 * 1024 * 1024,   // 2MB
-        // ❌ JANGAN set "allow" di sini; biarkan controller yang validasi tipe
+        parse: true,
+        output: 'stream',
+        multipart: { output: 'stream' },
+        maxBytes: 2 * 1024 * 1024, // 2 MB
       },
     },
     handler: uploadAvatar,

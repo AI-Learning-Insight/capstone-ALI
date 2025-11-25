@@ -1,12 +1,12 @@
 // backend/src/controllers/user.controller.js
 import Boom from '@hapi/boom';
 import fs from 'fs';
-import path from 'path';
+import Path from 'path';
 import { pipeline } from 'stream/promises';
 import mime from 'mime-types';
 import { changePasswordSchema, updateProfileSchema } from '../validators/user.schema.js';
 import { comparePassword, hashPassword } from '../utils/password.js';
-import knex from '../db/knex.js';
+import { db } from '../db/knex.js';
 import {
   findUserById,
   updateUser,
@@ -14,7 +14,12 @@ import {
   updateUserPasswordHashById,
 } from '../services/user.service.js';
 
-const AVATAR_DIR = path.join(process.cwd(), 'uploads', 'avatars');
+const AVATAR_DIR = Path.join(process.cwd(), 'uploads', 'avatars');
+
+// pastikan folder upload ada
+if (!fs.existsSync(AVATAR_DIR)) {
+  fs.mkdirSync(AVATAR_DIR, { recursive: true });
+}
 
 export const me = async (request, h) => {
   const userId = request.auth.credentials.id;
@@ -23,7 +28,7 @@ export const me = async (request, h) => {
 
   // Tambahkan info kelas utama dari ml_user_class (jika ada ml_user_id)
   if (user.ml_user_id) {
-    const cls = await knex('ml_user_class')
+    const cls = await db('ml_user_class')
       .select('class_track', 'class_prefix', 'class_code')
       .where({ ml_user_id: user.ml_user_id })
       .first();
@@ -96,32 +101,55 @@ export const changePassword = async (request, h) => {
     .code(200);
 };
 
-export const uploadAvatar = async (request, h) => {
-  const userId = request.auth.credentials.id;
-  const { file } = request.payload || {};
+// ✅ versi baru uploadAvatar
+export async function uploadAvatar(request, h) {
+  // kredensial user
+  const creds = request.auth?.credentials || {};
+  const userId = creds.id || creds.userId || creds.user_id;
 
-  if (!file || typeof file.pipe !== 'function') {
+  if (!userId) {
+    throw Boom.unauthorized('User tidak ditemukan di token');
+  }
+
+  // ⬇️ HARUS sama dengan nama field di FormData: "avatar"
+  const file = request.payload.avatar;
+
+  if (!file || !file.hapi) {
     throw Boom.badRequest('File avatar wajib diisi');
   }
 
-  const contentType = file.hapi?.headers?.['content-type'] || '';
-  const ext = mime.extension(contentType);
+  const { filename, headers } = file.hapi;
+  const contentType = headers['content-type'] || '';
 
-  if (!ext || !['jpg', 'jpeg', 'png', 'webp'].includes(ext)) {
-    throw Boom.badRequest('Tipe file avatar harus JPG, PNG, atau WEBP');
+  if (!contentType.startsWith('image/')) {
+    throw Boom.badRequest('File harus berupa gambar (jpeg/png/webp)');
   }
 
-  await fs.promises.mkdir(AVATAR_DIR, { recursive: true });
+  // tentukan ekstensi
+  const extFromMime = mime.extension(contentType);
+  const extFromName = filename && filename.includes('.') ? filename.split('.').pop() : null;
+  const ext = extFromMime || extFromName || 'png';
 
-  const filename = `${userId}-${Date.now()}.${ext}`;
-  const dest = path.join(AVATAR_DIR, filename);
+  const safeName = `${userId}-${Date.now()}.${ext}`;
+  const filepath = Path.join(AVATAR_DIR, safeName);
 
-  await pipeline(file, fs.createWriteStream(dest));
+  // simpan stream ke file
+  await pipeline(file, fs.createWriteStream(filepath));
 
-  const avatar_url = `/uploads/avatars/${filename}`;
-  await updateUser(userId, { avatar_url });
+  const relativeUrl = `/uploads/avatars/${safeName}`;
+
+  // update user di database
+  await db('users')
+    .where({ id: userId })
+    .update({
+      avatar_url: relativeUrl,
+      updated_at: db.fn.now(), // hapus kalau tidak punya kolom ini
+    });
 
   return h
-    .response({ status: 'ok', data: { avatar_url } })
-    .code(201);
-};
+    .response({
+      status: 'ok',
+      data: { avatar_url: relativeUrl },
+    })
+    .code(200);
+}

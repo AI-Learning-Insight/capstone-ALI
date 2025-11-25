@@ -12,7 +12,6 @@ import {
   Plus,
   CheckCircle2,
   Circle,
-  Atom,
   Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -26,6 +25,115 @@ import { useAuth } from "../lib/auth-context";
 import api, { publicUrl } from "../lib/api.js";
 import LearningInsightsCard from "../features/dashboard/LearningInsightsCard";
 import { formatMenteeCode } from "../lib/student-code";
+
+// --- Hints / Tips untuk klasifikasi ---
+
+const LEARNER_TYPE_HINTS = {
+  CONSISTENT: {
+    title: "Apa itu Consistent Learner?",
+    body:
+      "Kamu belajar dengan ritme yang stabil dari hari ke hari. Ini bagus untuk progres jangka panjang. Tips: pertahankan jadwal belajar mingguan, gunakan to-do list modul, dan jangan menumpuk tugas di akhir.",
+  },
+  FAST: {
+    title: "Apa itu Fast Learner?",
+    body:
+      "Kamu cepat menyelesaikan materi. Hati-hati jangan hanya mengejar kecepatan. Tips: luangkan waktu review ringkas setelah belajar, buat catatan singkat, dan cek kembali soal yang pernah salah.",
+  },
+  REFLECTIVE: {
+    title: "Apa itu Reflective Learner?",
+    body:
+      "Kamu suka merenungkan materi dan butuh waktu lebih lama. Ini bagus untuk pemahaman dalam. Tips: tetap pasang batas waktu belajar, pecah materi besar jadi bagian kecil, dan gunakan ringkasan di akhir sesi.",
+  },
+};
+
+const STYLE_HINTS = {
+  CONSISTENT: {
+    title: "Style: Consistent",
+    body:
+      "Pola belajarmu stabil dari hari ke hari. Tips: simpan jam belajar favorit (misal malam/jam tertentu) dan jaga lingkungan belajar bebas distraksi.",
+  },
+  FAST: {
+    title: "Style: Fast",
+    body:
+      "Kamu cenderung belajar dalam sprint singkat namun intens. Tips: sisipkan jeda istirahat (5–10 menit) dan sesi review mingguan agar materi tidak cepat lupa.",
+  },
+  REFLECTIVE: {
+    title: "Style: Reflective",
+    body:
+      "Kamu lebih nyaman jika punya waktu mencerna materi. Tips: setelah menonton video/ membaca modul, tulis 3 poin utama dan 1 pertanyaan yang masih mengganjal.",
+  },
+};
+
+const PASS_RATE_HINTS = {
+  HIGH: {
+    title: "Pass Rate Tinggi",
+    body:
+      "Persentase lulus ujianmu sudah baik. Pertahankan pola belajar yang sekarang. Tips: fokus meningkatkan nilai di mapel yang masih lemah dan coba beberapa soal tingkat lanjut.",
+  },
+  MEDIUM: {
+    title: "Pass Rate Sedang",
+    body:
+      "Sebagian besar ujian sudah lulus, tapi masih ada ruang perbaikan. Tips: review kembali kuis yang nilainya rendah, cari pola kesalahan, dan minta bantuan mentor untuk topik yang sulit.",
+  },
+  LOW: {
+    title: "Pass Rate Rendah",
+    body:
+      "Banyak ujian yang belum lulus. Jangan patah semangat. Tips: mulai dari modul dasar, kerjakan latihan sedikit-sedikit tapi rutin, dan manfaatkan sesi mentoring atau diskusi kelas.",
+  },
+};
+
+const DROPOUT_HINTS = {
+  LOW: {
+    title: "Dropout Risk Rendah",
+    body:
+      "Risiko berhenti program rendah. Tetap jaga ritme belajar dan jangan menunda tugas. Tips: pasang target mingguan kecil (misal 2 modul selesai).",
+  },
+  MEDIUM: {
+    title: "Dropout Risk Sedang",
+    body:
+      "Aktivitas belajar mulai naik-turun. Tips: pilih waktu belajar yang realistis, kurangi distraksi (game/medsos saat belajar), dan gunakan to-do list di dashboard.",
+  },
+  HIGH: {
+    title: "Dropout Risk Tinggi",
+    body:
+      "Aktivitas belajarmu menurun cukup jauh. Tips: segera hubungi mentor, buat rencana belajar sederhana 1 minggu ke depan, dan mulai dari tugas yang paling mudah dulu agar momentum kembali.",
+  },
+};
+
+// --- Hints khusus metrik Learning Insights (per-metrik) ---
+
+const LEARNING_INSIGHT_HINTS = {
+  examsTaken: {
+    title: "Exams Taken",
+    body:
+      "Semakin banyak ujian yang kamu ikuti, semakin banyak latihan yang kamu dapat. Tips: ikut semua kuis yang tersedia dan catat jenis soal yang sering membuatmu salah.",
+  },
+  avgExamScore: {
+    title: "Avg Exam Score",
+    body:
+      "Nilai rata-rata ujian menunjukkan seberapa kuat pemahamanmu secara umum. Tips: identifikasi mapel dengan nilai rendah, lalu fokus review materi dan latihan soal di area itu.",
+  },
+  studyMinutes: {
+    title: "Study Minutes",
+    body:
+      "Total menit belajar menggambarkan seberapa sering dan lama kamu aktif. Tips: targetkan minimal 30–45 menit belajar fokus per hari atau 3–4 sesi per minggu.",
+  },
+  avgSubmissionRating: {
+    title: "Avg Submission Rating",
+    body:
+      "Kualitas tugas menunjukkan seberapa rapi dan tuntas kamu mengerjakan. Tips: baca kembali instruksi sebelum submit, cek ulang jawaban, dan perbaiki berdasarkan feedback mentor.",
+  },
+  tutorialsCompleted: {
+    title: "Tutorials Completed",
+    body:
+      "Semakin banyak modul yang selesai, semakin lengkap fondasi pemahamanmu. Tips: buat to-do list modul yang ingin diselesaikan minggu ini dan selesaikan sedikit demi sedikit.",
+  },
+  lastActivityDays: {
+    title: "Last Activity (days)",
+    body:
+      "Semakin besar angkanya, semakin lama kamu tidak aktif. Tips: usahakan kembali login dan belajar minimal seminggu sekali agar ritme belajar tidak hilang.",
+  },
+};
 
 const MOCK = {
   kpi: [
@@ -367,14 +475,14 @@ export default function Dashboard() {
     return "danger"; // pending
   };
 
-  // KPI cards dari insights (Learner Type dirapikan jadi 2 baris)
+  // KPI cards dari insights + hint
   const kpiCards = useMemo(() => {
     const feat = insights || {};
 
     const styleRaw = feat.style || ""; // "consistent"
     const styleClean = styleRaw
       ? styleRaw.charAt(0).toUpperCase() + styleRaw.slice(1).toLowerCase()
-      : "-"; // "Consistent"
+      : "-";
 
     const learnerTypeText =
       feat.learner_type_text ||
@@ -387,14 +495,34 @@ export default function Dashboard() {
         : "-");
 
     // Bagi "Consistent Learner" jadi 2 baris:
-    // value: "Consistent"
-    // helper: "Learner"
     let learnerValue = learnerTypeText || "-";
     let learnerHelper = "";
     if (learnerTypeText && learnerTypeText.includes(" ")) {
       const parts = learnerTypeText.split(" ");
       learnerValue = parts.slice(0, -1).join(" ");
       learnerHelper = parts[parts.length - 1];
+    }
+
+    // Kode learner type (CONSISTENT / FAST / REFLECTIVE)
+    let learnerTypeCode = feat.learner_type_code;
+    if (!learnerTypeCode) {
+      if (styleRaw) {
+        learnerTypeCode = styleRaw.toUpperCase();
+      } else if (learnerTypeText) {
+        const upper = learnerTypeText.toUpperCase();
+        if (upper.includes("FAST")) learnerTypeCode = "FAST";
+        else if (upper.includes("REFLECTIVE")) learnerTypeCode = "REFLECTIVE";
+        else if (upper.includes("CONSISTENT")) learnerTypeCode = "CONSISTENT";
+      }
+    }
+
+    // Kode style
+    let styleCode = feat.style_code;
+    if (!styleCode && styleRaw) {
+      styleCode = styleRaw.toUpperCase();
+    }
+    if (!styleCode && learnerTypeCode) {
+      styleCode = learnerTypeCode;
     }
 
     // Pass rate (0–1) → %
@@ -409,6 +537,14 @@ export default function Dashboard() {
       else passTone = "indigo";
     }
 
+    // Level untuk hint
+    let passLevel = null;
+    if (passPct != null) {
+      if (passPct >= 80) passLevel = "HIGH";
+      else if (passPct >= 60) passLevel = "MEDIUM";
+      else passLevel = "LOW";
+    }
+
     // Dropout risk (0–1) → %
     const dropoutRaw = feat.dropout_risk;
     const dropoutPct =
@@ -416,47 +552,63 @@ export default function Dashboard() {
 
     let dropoutTone = "indigo";
     let dropoutHelper = "Perkiraan risiko berhenti";
+    let dropoutCode = null;
+
     if (dropoutPct != null) {
       if (dropoutPct < 35) {
         dropoutTone = "green";
         dropoutHelper = "Low risk (aman)";
+        dropoutCode = "LOW";
       } else if (dropoutPct < 70) {
         dropoutTone = "orange";
         dropoutHelper = "Medium risk (perlu dijaga)";
+        dropoutCode = "MEDIUM";
       } else {
         dropoutTone = "orange";
         dropoutHelper = "Medium–High risk (perlu dijaga)";
+        dropoutCode = "HIGH";
       }
     }
 
+    const learnerHint =
+      learnerTypeCode ? LEARNER_TYPE_HINTS[learnerTypeCode] : undefined;
+    const styleHint = styleCode ? STYLE_HINTS[styleCode] : undefined;
+    const passHint = passLevel ? PASS_RATE_HINTS[passLevel] : undefined;
+    const dropoutHint =
+      dropoutCode ? DROPOUT_HINTS[dropoutCode] : undefined;
+
     return [
       {
-        icon: Atom, // lebih nyambung ke "Learner Type"
+        icon: Flame,
         label: "Learner Type",
-        value: learnerValue, // contoh: "Consistent"
-        helper: learnerHelper, // contoh: "Learner"
+        value: learnerValue,
+        helper: learnerHelper,
         tone: "purple",
+        hint: learnerHint,
       },
       {
-        icon: Clock3, // style = pola tempo belajar
+        icon: Clock3,
         label: "Style",
         value: styleClean || "-",
         helper: "Pola dan tempo belajar",
         tone: "green",
+        hint: styleHint,
       },
       {
-        icon: Target, // 🎯 pass rate
+        icon: Target,
         label: "Pass Rate",
         value: passPct != null ? `${passPct}%` : "-",
         helper: "Persentase ujian lulus",
         tone: passTone,
+        hint: passHint,
       },
       {
-        icon: AlertCircle, // ⚠️ dropout risk
+        icon: AlertCircle,
         label: "Dropout Risk",
         value: dropoutPct != null ? `${dropoutPct}%` : "-",
         helper: dropoutHelper,
         tone: dropoutTone,
+        hint: dropoutHint,
       },
     ];
   }, [insights]);
@@ -474,26 +626,28 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="bg-slate-50 min-h-screen w-full">
-      {/* HAPUS class 'container' supaya lebar full-screen */}
+    <div className="min-h-screen w-full bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50">
       <div className="w-full px-4 md:px-6 py-6">
-        <h1 className="text-xl md:text-2xl font-semibold text-slate-900 mb-4">
-          Welcome, <span className="text-slate-700">{profile.name}!</span>
+        <h1 className="text-xl md:text-2xl font-semibold text-slate-900 dark:text-slate-50 mb-4">
+          Welcome,{" "}
+          <span className="text-slate-700 dark:text-slate-200">
+            {profile.name}!
+          </span>
         </h1>
 
         {/* ====== LAYOUT BARU: 2 KOLOM ====== */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* KIRI: Profile + Learning Insights */}
           <div className="lg:col-span-1 space-y-4">
-            <Card>
+            <Card className="bg-white rounded-2xl shadow-sm border border-slate-100 dark:bg-slate-900 dark:border-slate-800">
               <div className="p-6">
                 <div className="flex flex-col items-center text-center">
                   <img
                     src={profile.avatar}
                     alt="avatar"
-                    className="w-28 h-28 rounded-full object-cover ring-4 ring-white shadow"
+                    className="w-28 h-28 rounded-full object-cover ring-4 ring-slate-100 shadow dark:ring-slate-800"
                   />
-                  <h2 className="mt-4 text-xl font-semibold text-slate-900">
+                  <h2 className="mt-4 text-xl font-semibold text-slate-900 dark:text-slate-50">
                     {profile.name}
                   </h2>
                   <div className="mt-2">
@@ -501,11 +655,11 @@ export default function Dashboard() {
                   </div>
 
                   <div className="w-full mt-4 space-y-2 text-left">
-                    <div className="flex items-center gap-3 text-slate-600">
+                    <div className="flex items-center gap-3 text-slate-600 dark:text-slate-300">
                       <Mail className="w-4 h-4" />
                       <span className="text-sm">{profile.email}</span>
                     </div>
-                    <div className="flex items-center gap-3 text-slate-600">
+                    <div className="flex items-center gap-3 text-slate-600 dark:text-slate-300">
                       <IdCard className="w-4 h-4" />
                       <span className="text-sm">
                         {formatMenteeCode(user)}
@@ -515,7 +669,7 @@ export default function Dashboard() {
 
                   <Link
                     to="/profile"
-                    className="mt-5 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700"
+                    className="mt-5 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
                     role="button"
                   >
                     <PencilLine className="w-4 h-4" />
@@ -526,11 +680,14 @@ export default function Dashboard() {
             </Card>
 
             <div className="mt-2">
-              <LearningInsightsCard feat={insights} />
+              <LearningInsightsCard
+                feat={insights}
+                hint={LEARNING_INSIGHT_HINTS.studyMinutes}
+              />
             </div>
           </div>
 
-          {/* KANAN: KPI + Banner + Progress + To-do + Materi */}
+          {/* KANAN: KPI + Banner + Progress + To-do */}
           <div className="lg:col-span-2 space-y-4">
             {/* KPI cards dari insights */}
             <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-6">
@@ -542,12 +699,13 @@ export default function Dashboard() {
                   value={k.value}
                   helper={k.helper}
                   tone={k.tone}
+                  hint={k.hint}
                 />
               ))}
             </div>
 
             {/* CoachBanner: banner ungu */}
-            <Card>
+            <Card className="bg-white rounded-2xl shadow-sm border border-slate-100 dark:bg-slate-900 dark:border-slate-800">
               <div className="relative overflow-hidden rounded-2xl">
                 <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/90 to-indigo-400/80" />
                 <div
@@ -577,36 +735,47 @@ export default function Dashboard() {
               </div>
             </Card>
 
-            {/* Progress Belajar, To-do, dan Progress Materi */}
+            {/* Progress Belajar & To-do List */}
             <div className="grid grid-cols-12 gap-6">
-              <Card className="col-span-12">
-                <Section title="Progress Belajar">
-                  <div className="space-y-3">
+              <Card className="col-span-12 bg-white rounded-2xl shadow-sm border border-slate-100 dark:bg-slate-900 dark:border-slate-800">
+                <Section
+                  title="Progress Belajar"
+                  className="pb-4"
+                >
+                  <div className="space-y-4">
                     {Y.progress.map((p) => (
                       <div key={p.label} className="pb-1">
+                        {/* Baris judul + skor */}
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-slate-800 font-medium">
+                          {/* nama modul: lebih tebal & kontras */}
+                          <span className="text-sm md:text-base font-semibold text-slate-900 dark:text-slate-50">
                             {p.label}
                           </span>
-                          <span className="text-slate-500 text-sm">
+
+                          {/* skor: sedikit lebih terang di dark mode */}
+                          <span className="text-xs md:text-sm font-medium text-slate-600 dark:text-slate-200">
                             {p.score}
                           </span>
                         </div>
+
+                        {/* progress bar (pastikan ProgressBar juga punya dark:bg) */}
                         <ProgressBar
                           label=""
                           percent={p.percent}
                           color={p.color}
                         />
+
+                        {/* keterangan persen */}
                         {p.percent === 0 ? (
-                          <p className="text-xs text-slate-400 mt-1">
+                          <p className="text-xs mt-1 text-slate-500 dark:text-slate-300">
                             0% selesai
                           </p>
                         ) : p.percent < 100 ? (
-                          <p className="text-xs text-slate-400 mt-1">
+                          <p className="text-xs mt-1 text-slate-500 dark:text-slate-300">
                             {p.percent}% selesai
                           </p>
                         ) : (
-                          <p className="text-xs text-emerald-600 mt-1">
+                          <p className="text-xs mt-1 font-medium text-emerald-600 dark:text-emerald-400">
                             100% selesai
                           </p>
                         )}
@@ -617,7 +786,7 @@ export default function Dashboard() {
               </Card>
 
               {/* To-do List */}
-              <Card className="col-span-12">
+              <Card className="col-span-12 bg-white rounded-2xl shadow-sm border border-slate-100 dark:bg-slate-900 dark:border-slate-800">
                 <Section
                   title={
                     <div className="inline-flex items-center gap-2">
@@ -629,7 +798,7 @@ export default function Dashboard() {
                     <button
                       type="button"
                       onClick={() => setAddingTodo((v) => !v)}
-                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"
+                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
                     >
                       <Plus className="w-4 h-4" />
                       {addingTodo ? "Batal" : "Tambah"}
@@ -640,14 +809,14 @@ export default function Dashboard() {
                     {addingTodo && (
                       <form
                         onSubmit={handleAddTodo}
-                        className="p-3 rounded-xl border border-dashed border-indigo-200 space-y-3 bg-indigo-50/40"
+                        className="p-3 rounded-xl border border-dashed border-indigo-200 space-y-3 bg-indigo-50/40 dark:border-indigo-500/60 dark:bg-slate-900"
                       >
                         <div>
-                          <label className="block text-sm font-medium text-slate-700 mb-1">
+                          <label className="block text-sm font-medium text-slate-700 mb-1 dark:text-slate-200">
                             Pilih Modul
                           </label>
                           <select
-                            className="w-full rounded-lg border-slate-200 text-sm"
+                            className="w-full rounded-lg border-slate-200 text-sm dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100"
                             value={todoForm.journey_id}
                             onChange={(e) =>
                               setTodoForm((f) => ({
@@ -673,12 +842,12 @@ export default function Dashboard() {
 
                         <div className="flex flex-col sm:flex-row gap-3 items-end">
                           <div className="flex-1">
-                            <label className="block text-sm font-medium text-slate-700 mb-1">
+                            <label className="block text-sm font-medium text-slate-700 mb-1 dark:text-slate-200">
                               Target Selesai (opsional)
                             </label>
                             <input
                               type="date"
-                              className="w-full rounded-lg border-slate-200 text-sm"
+                              className="w-full rounded-lg border-slate-200 text-sm dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100"
                               value={todoForm.due_date}
                               onChange={(e) =>
                                 setTodoForm((f) => ({
@@ -690,7 +859,7 @@ export default function Dashboard() {
                           </div>
                           <button
                             type="submit"
-                            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"
+                            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
                           >
                             <CheckCircle2 className="w-4 h-4" />
                             Simpan
@@ -716,7 +885,7 @@ export default function Dashboard() {
                       return (
                         <div
                           key={t.id}
-                          className="flex items-start gap-3 p-3 rounded-xl border border-slate-100 hover:bg-slate-50"
+                          className="flex items-start gap-3 p-3 rounded-xl border border-slate-100 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900"
                         >
                           <button
                             type="button"
@@ -733,10 +902,10 @@ export default function Dashboard() {
                           </button>
 
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium text-slate-800">
+                            <p className="font-medium text-slate-800 dark:text-slate-100">
                               {t.title}
                             </p>
-                            <p className="text-sm text-slate-500">
+                            <p className="text-sm text-slate-500 dark:text-slate-300">
                               {t.subject || "Modul"} • {dueLabel}
                             </p>
                           </div>
@@ -746,7 +915,7 @@ export default function Dashboard() {
                             <button
                               type="button"
                               onClick={() => handleTodoDelete(t)}
-                              className="text-xs text-slate-400 hover:text-rose-500 inline-flex items-center gap-1"
+                              className="text-xs text-slate-400 hover:text-rose-500 inline-flex items-center gap-1 dark:text-slate-400 dark:hover:text-rose-400"
                             >
                               <Trash2 className="w-3 h-3" />
                               Hapus
@@ -757,44 +926,11 @@ export default function Dashboard() {
                     })}
 
                     {todos.length === 0 && !addingTodo && (
-                      <p className="text-sm text-slate-500">
+                      <p className="text-sm text-slate-500 dark:text-slate-300">
                         Belum ada to-do. Tambahkan modul yang ingin kamu
                         selesaikan minggu ini.
                       </p>
                     )}
-                  </div>
-                </Section>
-              </Card>
-
-              {/* Progress Materi */}
-              <Card className="col-span-12">
-                <Section
-                  title={
-                    <div className="inline-flex items-center gap-2">
-                      <span className="h-2 w-2 rounded-full bg-rose-500 inline-block" />{" "}
-                      Progress Materi
-                    </div>
-                  }
-                >
-                  <div className="space-y-3">
-                    {Y.materi.map((m) => (
-                      <div
-                        key={m.id}
-                        className="flex items-center gap-3 p-3 rounded-xl border border-slate-100"
-                      >
-                        <div className="h-10 w-10 rounded-xl bg-slate-100 grid place-items-center">
-                          <Atom className="w-5 h-5 text-slate-600" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-slate-800">
-                            {m.title}
-                          </p>
-                          <p className="text-sm text-slate-500">
-                            {m.subject} • {m.date}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
                   </div>
                 </Section>
               </Card>

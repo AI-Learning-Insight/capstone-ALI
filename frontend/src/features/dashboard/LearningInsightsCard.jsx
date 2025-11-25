@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { Sparkles } from 'lucide-react';
 import api from '../../lib/api';
+import HintBadge from '../../components/ui/HintBadge.jsx';
 
 const fmtInt = (v) => (v == null ? '-' : Number(v).toLocaleString('id-ID'));
 const fmtPct = (v) => (v == null ? '-' : `${Math.round(Number(v) * 100)}%`);
@@ -11,17 +12,17 @@ const fmt1 = (v) => (v == null ? '-' : Number(v).toFixed(1));
 function StatTile({ label, value, hint, tone = 'default' }) {
   const toneClass =
     tone === 'good'
-      ? 'text-emerald-600'
+      ? 'text-emerald-600 dark:text-emerald-400'
       : tone === 'warn'
-      ? 'text-amber-600'
+      ? 'text-amber-600 dark:text-amber-400'
       : tone === 'bad'
-      ? 'text-rose-600'
-      : 'text-slate-900';
+      ? 'text-rose-600 dark:text-rose-400'
+      : 'text-slate-900 dark:text-slate-50';
 
   return (
-    <div className="rounded-xl border bg-white px-3 py-2 shadow-sm h-full">
+    <div className="rounded-xl border bg-white px-3 py-2 shadow-sm h-full dark:bg-slate-900 dark:border-slate-800">
       {/* Label */}
-      <div className="h-9 text-[11px] leading-tight text-slate-500 flex items-center justify-center text-center px-1">
+      <div className="h-9 text-[11px] leading-tight text-slate-500 dark:text-slate-300 flex items-center justify-center text-center px-1">
         {label}
       </div>
 
@@ -35,14 +36,14 @@ function StatTile({ label, value, hint, tone = 'default' }) {
       </div>
 
       {/* Hint – bisa 2 baris, tidak memotong kata */}
-      <div className="h-8 text-[11px] leading-snug text-slate-500 text-center px-2 overflow-hidden">
+      <div className="h-8 text-[11px] leading-snug text-slate-500 dark:text-slate-300 text-center px-2 overflow-hidden">
         <span className="block">{hint ?? '\u00A0'}</span>
       </div>
     </div>
   );
 }
 
-export default function LearningInsightsCard({ feat: featProp }) {
+export default function LearningInsightsCard({ feat: featProp, hint }) {
   const [feat, setFeat] = useState(featProp);
   const [loading, setLoading] = useState(!featProp);
 
@@ -64,7 +65,6 @@ export default function LearningInsightsCard({ feat: featProp }) {
   }, [featProp]);
 
   const style = (feat?.style || '').toLowerCase();
-  const styleUpper = style ? style.toUpperCase() : '-';
 
   const learnerTypeText =
     feat?.learner_type_text ||
@@ -106,24 +106,31 @@ export default function LearningInsightsCard({ feat: featProp }) {
   }
 
   return (
-    <div className="rounded-2xl border bg-white p-4 shadow-card">
+    <div className="rounded-2xl border bg-white p-4 shadow-card dark:bg-slate-900 dark:border-slate-800">
       <div className="flex items-start justify-between mb-3 gap-2">
         <div>
-          <h3 className="font-display text-sm md:text-base font-semibold tracking-tight text-slate-900">
+          <h3 className="font-display text-sm md:text-base font-semibold tracking-tight text-slate-900 dark:text-slate-50">
             Learning Insights
           </h3>
-          <p className="text-[11px] md:text-xs text-slate-500 mt-0.5">
+          <p className="text-[11px] md:text-xs text-slate-500 dark:text-slate-300 mt-0.5">
             Ringkasan pola belajar berdasarkan aktivitasmu.
           </p>
         </div>
-        {!loading && (
-          <div className="hidden md:flex items-center gap-1 text-[11px] text-slate-500">
-            <Sparkles size={14} />
-            <span className="whitespace-nowrap">
-              {learnerTypeText !== '-' ? learnerTypeText : 'No insight yet'}
-            </span>
-          </div>
-        )}
+
+        <div className="flex flex-col items-end gap-1">
+          {/* Hint di pojok kanan atas */}
+          {hint && <HintBadge title={hint.title}>{hint.body}</HintBadge>}
+
+          {/* Badge Sparkles tetap ditampilkan kalau tidak loading */}
+          {!loading && (
+            <div className="hidden md:flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-300">
+              <Sparkles size={14} />
+              <span className="whitespace-nowrap">
+                {learnerTypeText !== '-' ? learnerTypeText : 'No insight yet'}
+              </span>
+            </div>
+          )}
+        </div>
       </div>
 
       {loading ? (
@@ -132,7 +139,7 @@ export default function LearningInsightsCard({ feat: featProp }) {
           {Array.from({ length: 9 }).map((_, i) => (
             <div
               key={i}
-              className="h-[112px] rounded-xl border bg-slate-50 animate-pulse"
+              className="h-[112px] rounded-xl border bg-slate-50 dark:bg-slate-800 dark:border-slate-700 animate-pulse"
             />
           ))}
         </div>
@@ -143,7 +150,7 @@ export default function LearningInsightsCard({ feat: featProp }) {
           <StatTile
             label="Exams Taken"
             value={fmtInt(feat?.exams_taken)}
-            hint="Total Ujian diikuti"
+            hint="Total ujian diikuti"
           />
 
           {/* Detail nilai & aktivitas */}
@@ -151,6 +158,7 @@ export default function LearningInsightsCard({ feat: featProp }) {
             label="Avg Exam Score"
             value={fmt1(feat?.avg_exam_score)}
             hint="Rata-rata nilai ujian"
+            tone={passTone}
           />
           <StatTile
             label="Study Minutes"
@@ -171,6 +179,7 @@ export default function LearningInsightsCard({ feat: featProp }) {
             label="Last Activity (days)"
             value={fmtInt(feat?.days_since_last_activity)}
             hint="Sejak terakhir aktif"
+            tone={dropoutTone}
           />
         </div>
       )}

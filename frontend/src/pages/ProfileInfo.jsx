@@ -8,9 +8,10 @@ import Card from "../components/ui/Card.jsx";
 import Section from "../components/ui/Section.jsx";
 import Badge from "../components/ui/Badge.jsx";
 import api, { publicUrl } from "../lib/api.js";
-import { notify } from "../lib/notify"; // Sonner helper
+import { notify } from "../lib/notify"; // Sonner helper lama, masih dipakai di onSubmit
 import { useAuth } from "../lib/auth-context";
 import { formatMenteeCode } from "../lib/student-code";
+import { toast } from "sonner";
 
 /** Helper input + ikon */
 function Field({ label, icon, children }) {
@@ -51,7 +52,7 @@ function allowPhoneKeys(e) {
 }
 
 export default function ProfileInfo() {
-  const { user } = useAuth();   // ⬅️ ambil user dari AuthContext
+  const { user, refreshUser } = useAuth();   // ⬅️ sekarang ambil refreshUser juga
 
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({ phone: "" });
@@ -108,45 +109,43 @@ export default function ProfileInfo() {
   // mentee code: pakai user dari context dulu, fallback ke me
   const menteeCode = formatMenteeCode(user || me);
 
-  // ---- upload avatar ----
+  // ---- upload avatar (versi baru sesuai instruksi) ----
   const handlePickAvatar = () => fileRef.current?.click();
 
-  async function handleAvatarChange(e) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleAvatarChange = async (event) => {
+    const file = event.target.files?.[0];
 
-    const ok = ["image/jpeg", "image/png", "image/webp"];
-    if (!ok.includes(file.type)) {
-      notify.error("Gunakan format JPG/PNG/WEBP");
-      e.target.value = "";
-      return;
-    }
-    if (file.size > 2 * 1024 * 1024) {
-      notify.error("Ukuran maksimum 2MB");
-      e.target.value = "";
+    if (!file) {
+      toast.error("Silakan pilih file avatar terlebih dahulu");
       return;
     }
 
-    // Preview lokal cepat
-    const localUrl = URL.createObjectURL(file);
-    setMe((s) => ({ ...s, avatar_url: localUrl }));
-
-    const fd = new FormData();
-    fd.append("avatar", file);
+    const formData = new FormData();
+    // ⬇️ NAMA FIELD HARUS 'avatar' (cocok dengan backend)
+    formData.append("avatar", file);
 
     try {
-      const r = await notify.promise(api.post("/me/avatar", fd), {
-        loading: "Mengunggah foto…",
-        success: "Foto profil diperbarui ✅",
-        error: (err) =>
-          err?.response?.data?.message || "Gagal mengunggah foto",
+      await api.post("/me/avatar", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
-      const url = r?.data?.data?.avatar_url;
-      if (url) setMe((s) => ({ ...s, avatar_url: url }));
+
+      toast.success("Avatar berhasil diperbarui");
+
+      // refresh data user supaya foto baru langsung muncul
+      if (typeof refreshUser === "function") {
+        await refreshUser();
+      }
+    } catch (err) {
+      const msg =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Gagal mengunggah avatar";
+      toast.error(msg);
     } finally {
-      e.target.value = "";
+      // reset input supaya bisa pilih file yang sama lagi kalau mau
+      event.target.value = "";
     }
-  }
+  };
 
   // ---- sanitasi NISN: angka saja, max 10 ----
   function sanitizeNISN(v) {
@@ -184,9 +183,13 @@ export default function ProfileInfo() {
     }
   }
 
-  const avatarSrc = me.avatar_url?.startsWith("/uploads/")
-    ? publicUrl(me.avatar_url)
-    : me.avatar_url || "/images/avatar/placeholder.jpg";
+  // avatarSrc sekarang prioritaskan user.avatar_url (hasil refreshUser)
+  const avatarBase =
+    user?.avatar_url || me.avatar_url || "/images/avatar/placeholder.jpg";
+
+  const avatarSrc = avatarBase?.startsWith("/uploads/")
+    ? publicUrl(avatarBase)
+    : avatarBase;
 
   return (
     <div className="bg-slate-50 min-h-screen">
@@ -219,7 +222,7 @@ export default function ProfileInfo() {
                       ref={fileRef}
                       type="file"
                       accept="image/jpeg,image/png,image/webp"
-                      hidden
+                      className="hidden"
                       onChange={handleAvatarChange}
                     />
                   </div>

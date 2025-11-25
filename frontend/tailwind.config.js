@@ -1,11 +1,18 @@
 /* frontend/tailwind.config.js */
 export default {
-  content: ['./index.html', './src/**/*.{js,jsx}'],
+  darkMode: 'class', // ⬅️ AKTIFKAN DARK MODE BERBASIS CLASS
+  content: [
+    './index.html',
+    './src/**/*.{js,jsx,ts,tsx}',
+  ],
   theme: {
     container: {
       center: true,
       padding: '1rem',
-      screens: { lg: '1024px', xl: '1152px' },
+      screens: {
+        lg: '1024px',
+        xl: '1152px',
+      },
     },
     extend: {
       colors: {
