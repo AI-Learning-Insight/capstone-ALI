@@ -106,33 +106,39 @@ const LEARNING_INSIGHT_HINTS = {
   examsTaken: {
     title: "Exams Taken",
     body:
-      "Semakin banyak ujian yang kamu ikuti, semakin banyak latihan yang kamu dapat. Tips: ikut semua kuis yang tersedia dan catat jenis soal yang sering membuatmu salah.",
+      "Apa ini: jumlah ujian atau kuis yang sudah kamu ikuti. Cara tingkatkan: coba semua latihan yang tersedia dan ulangi topik yang jarang dikerjakan.",
   },
   avgExamScore: {
     title: "Avg Exam Score",
     body:
-      "Nilai rata-rata ujian menunjukkan seberapa kuat pemahamanmu secara umum. Tips: identifikasi mapel dengan nilai rendah, lalu fokus review materi dan latihan soal di area itu.",
+      "Apa ini: rata-rata nilai ujianmu. Cara tingkatkan: review soal dengan nilai rendah, catat pola kesalahan, lalu latihan ulang topik tersebut.",
   },
   studyMinutes: {
     title: "Study Minutes",
     body:
-      "Total menit belajar menggambarkan seberapa sering dan lama kamu aktif. Tips: targetkan minimal 30–45 menit belajar fokus per hari atau 3–4 sesi per minggu.",
+      "Apa ini: total menit belajar yang tercatat. Cara tingkatkan: jadwalkan sesi 30-45 menit, 3-4 kali seminggu dan catat progresnya.",
   },
   avgSubmissionRating: {
     title: "Avg Submission Rating",
     body:
-      "Kualitas tugas menunjukkan seberapa rapi dan tuntas kamu mengerjakan. Tips: baca kembali instruksi sebelum submit, cek ulang jawaban, dan perbaiki berdasarkan feedback mentor.",
+      "Apa ini: rata-rata penilaian tugas yang kamu submit. Cara tingkatkan: baca instruksi dengan teliti, cek ulang sebelum submit, dan terapkan feedback mentor.",
   },
   tutorialsCompleted: {
     title: "Tutorials Completed",
     body:
-      "Semakin banyak modul yang selesai, semakin lengkap fondasi pemahamanmu. Tips: buat to-do list modul yang ingin diselesaikan minggu ini dan selesaikan sedikit demi sedikit.",
+      "Apa ini: jumlah materi atau tutorial yang sudah selesai. Cara tingkatkan: buat target mingguan 2-3 modul dan selesaikan sedikit demi sedikit.",
   },
   lastActivityDays: {
     title: "Last Activity (days)",
     body:
-      "Semakin besar angkanya, semakin lama kamu tidak aktif. Tips: usahakan kembali login dan belajar minimal seminggu sekali agar ritme belajar tidak hilang.",
+      "Apa ini: berapa hari sejak aktivitas terakhir. Cara tingkatkan: jika angkanya tinggi, login kembali hari ini dan mulai dari tugas paling mudah agar ritme kembali.",
   },
+};
+
+const LEARNING_INSIGHTS_CARD_HINT = {
+  title: "Cara baca Learning Insights",
+  body:
+    "Arahkan kursor atau tap ikon info di setiap metrik untuk melihat arti metrik dan tips menaikkannya.",
 };
 
 const MOCK = {
@@ -682,7 +688,8 @@ export default function Dashboard() {
             <div className="mt-2">
               <LearningInsightsCard
                 feat={insights}
-                hint={LEARNING_INSIGHT_HINTS.studyMinutes}
+                hint={LEARNING_INSIGHTS_CARD_HINT}
+                metricHints={LEARNING_INSIGHT_HINTS}
               />
             </div>
           </div>

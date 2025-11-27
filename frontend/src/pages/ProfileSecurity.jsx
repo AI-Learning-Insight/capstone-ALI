@@ -14,9 +14,9 @@ import { formatMenteeCode } from "../lib/student-code";
 function Field({ label, icon, children, error }) {
   return (
     <label className="block">
-      <span className="text-sm font-medium text-slate-700">{label}</span>
+      <span className="text-sm font-medium text-slate-700 dark:text-slate-200">{label}</span>
       <div className="relative mt-1">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
           {icon}
         </div>
         {children}
@@ -83,9 +83,9 @@ export default function ProfileSecurity() {
   if (!ready) return <div className="p-6">Loading...</div>;
 
   return (
-    <div className="bg-slate-50 min-h-screen">
+    <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50">
       <div className="container px-4 md:px-6 py-6">
-        <h1 className="text-2xl font-semibold text-center text-slate-900 mb-6">
+        <h1 className="text-2xl font-semibold text-center text-slate-900 dark:text-slate-50 mb-6">
           Edit Profil
         </h1>
 
@@ -98,29 +98,29 @@ export default function ProfileSecurity() {
                   <img
                     src={profile.avatar}
                     alt="avatar"
-                    className="w-44 h-44 rounded-full object-cover ring-4 ring-white shadow"
+                    className="w-44 h-44 rounded-full object-cover ring-4 ring-white shadow dark:ring-slate-800"
                   />
                   <button
                     type="button"
-                    className="absolute right-2 bottom-2 grid place-items-center w-9 h-9 rounded-full bg-white shadow border border-slate-200"
+                    className="absolute right-2 bottom-2 grid place-items-center w-9 h-9 rounded-full bg-white shadow border border-slate-200 dark:bg-slate-800 dark:border-slate-700"
                     title="Ganti foto"
                     onClick={() => (window.location.href = "/profile")}
                   >
-                    <Camera className="w-4 h-4 text-slate-700" />
+                    <Camera className="w-4 h-4 text-slate-700 dark:text-slate-100" />
                   </button>
                 </div>
 
-                <h2 className="mt-4 text-xl font-semibold text-slate-900">
+                <h2 className="mt-4 text-xl font-semibold text-slate-900 dark:text-slate-50">
                   {profile.name}
                 </h2>
-                <p className="text-slate-500">{profile.role}</p>
+                <p className="text-slate-500 dark:text-slate-300">{profile.role}</p>
 
                 <div className="w-full mt-4 space-y-2 text-left">
-                  <div className="flex items-center gap-3 text-slate-600">
+                  <div className="flex items-center gap-3 text-slate-600 dark:text-slate-300">
                     <Mail className="w-4 h-4" />
                     <span className="text-sm truncate">{profile.email}</span>
                   </div>
-                  <div className="flex items-center gap-3 text-slate-600">
+                  <div className="flex items-center gap-3 text-slate-600 dark:text-slate-300">
                     <IdCard className="w-4 h-4" />
                     <span className="text-sm">
                       {profile.studentCode}
@@ -131,13 +131,13 @@ export default function ProfileSecurity() {
                 <div className="w-full mt-6 space-y-2">
                   <Link
                     to="/profile"
-                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-50"
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800"
                   >
                     <UserRound className="w-4 h-4" /> Informasi Pribadi
                   </Link>
                   <Link
                     to="/profile/security"
-                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium bg-indigo-50 text-indigo-700"
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium bg-indigo-50 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-100"
                   >
                     <ShieldCheck className="w-4 h-4" /> Keamanan
                   </Link>
@@ -149,10 +149,10 @@ export default function ProfileSecurity() {
           {/* RIGHT */}
           <div className="col-span-12 lg:col-span-8 xl:col-span-9">
             <Card className="p-6">
-              <h2 className="text-xl font-semibold text-slate-900">
+              <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-50">
                 Keamanan
               </h2>
-              <p className="text-slate-500 mb-4">
+              <p className="text-slate-500 dark:text-slate-300 mb-4">
                 Update password untuk menjaga keamanan akun Anda.
               </p>
 
@@ -169,7 +169,7 @@ export default function ProfileSecurity() {
                     <input
                       type="password"
                       autoComplete="current-password"
-                      className="block w-full pl-9 pr-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="block w-full pl-9 pr-3 py-2 rounded-lg border border-slate-200 bg-white dark:bg-slate-900 dark:border-slate-700 dark:text-slate-50 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                       placeholder="Masukkan password saat ini"
                       value={form.current}
                       onChange={(e) =>
@@ -187,7 +187,7 @@ export default function ProfileSecurity() {
                   <input
                     type="password"
                     autoComplete="new-password"
-                    className="block w-full pl-9 pr-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="block w-full pl-9 pr-3 py-2 rounded-lg border border-slate-200 bg-white dark:bg-slate-900 dark:border-slate-700 dark:text-slate-50 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     placeholder="Minimal 8 karakter"
                     value={form.next}
                     onChange={(e) =>
@@ -204,7 +204,7 @@ export default function ProfileSecurity() {
                   <input
                     type="password"
                     autoComplete="new-password"
-                    className="block w-full pl-9 pr-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="block w-full pl-9 pr-3 py-2 rounded-lg border border-slate-200 bg-white dark:bg-slate-900 dark:border-slate-700 dark:text-slate-50 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     placeholder="Ulangi Password Baru"
                     value={form.confirm}
                     onChange={(e) =>
@@ -214,7 +214,7 @@ export default function ProfileSecurity() {
                 </Field>
 
                 <div className="md:col-span-2">
-                  <div className="rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-700 p-4">
+                  <div className="rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-700 p-4 dark:bg-indigo-500/10 dark:border-indigo-500/30 dark:text-indigo-100">
                     <p className="font-medium flex items-center gap-2">
                       <Info className="w-4 h-4" /> Tips Keamanan
                     </p>

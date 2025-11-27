@@ -67,7 +67,8 @@ export default function Navbar() {
   // Cek apakah sedang di halaman dashboard (user / mentor)
   const onDashboard =
     location.pathname.startsWith("/dashboard") ||
-    location.pathname.startsWith("/mentor");
+    location.pathname.startsWith("/mentor") ||
+    location.pathname.startsWith("/profile");
 
   useEffect(() => setOpen(false), [location.pathname]);
 

@@ -8,8 +8,8 @@ const fmtInt = (v) => (v == null ? '-' : Number(v).toLocaleString('id-ID'));
 const fmtPct = (v) => (v == null ? '-' : `${Math.round(Number(v) * 100)}%`);
 const fmt1 = (v) => (v == null ? '-' : Number(v).toFixed(1));
 
-// --- Tile dengan tinggi konsisten: label(h-9) + value(h-6) + hint(h-8)
-function StatTile({ label, value, hint, tone = 'default' }) {
+// --- Tile dengan tinggi konsisten: label(h-9) + value(h-6) + helper(h-8)
+function StatTile({ label, value, helper, hint, tone = 'default' }) {
   const toneClass =
     tone === 'good'
       ? 'text-emerald-600 dark:text-emerald-400'
@@ -20,10 +20,17 @@ function StatTile({ label, value, hint, tone = 'default' }) {
       : 'text-slate-900 dark:text-slate-50';
 
   return (
-    <div className="rounded-xl border bg-white px-3 py-2 shadow-sm h-full dark:bg-slate-900 dark:border-slate-800">
+    <div className="relative rounded-xl border bg-white px-3 py-2 shadow-sm h-full dark:bg-slate-900 dark:border-slate-800">
+      {/* Hint badge di sudut kanan atas */}
+      {hint ? (
+        <div className="absolute top-1.5 right-1.5">
+          <HintBadge title={hint.title}>{hint.body}</HintBadge>
+        </div>
+      ) : null}
+
       {/* Label */}
-      <div className="h-9 text-[11px] leading-tight text-slate-500 dark:text-slate-300 flex items-center justify-center text-center px-1">
-        {label}
+      <div className="h-9 text-[11px] leading-tight text-slate-500 dark:text-slate-300 flex items-center justify-center text-center px-1 pr-6">
+        <span>{label}</span>
       </div>
 
       {/* Value */}
@@ -35,15 +42,19 @@ function StatTile({ label, value, hint, tone = 'default' }) {
         </div>
       </div>
 
-      {/* Hint – bisa 2 baris, tidak memotong kata */}
+      {/* Helper - bisa 2 baris, tidak memotong kata */}
       <div className="h-8 text-[11px] leading-snug text-slate-500 dark:text-slate-300 text-center px-2 overflow-hidden">
-        <span className="block">{hint ?? '\u00A0'}</span>
+        <span className="block">{helper ?? '\u00A0'}</span>
       </div>
     </div>
   );
 }
 
-export default function LearningInsightsCard({ feat: featProp, hint }) {
+export default function LearningInsightsCard({
+  feat: featProp,
+  hint: cardHint,
+  metricHints = {},
+}) {
   const [feat, setFeat] = useState(featProp);
   const [loading, setLoading] = useState(!featProp);
 
@@ -65,6 +76,7 @@ export default function LearningInsightsCard({ feat: featProp, hint }) {
   }, [featProp]);
 
   const style = (feat?.style || '').toLowerCase();
+  const hints = metricHints || {};
 
   const learnerTypeText =
     feat?.learner_type_text ||
@@ -119,7 +131,9 @@ export default function LearningInsightsCard({ feat: featProp, hint }) {
 
         <div className="flex flex-col items-end gap-1">
           {/* Hint di pojok kanan atas */}
-          {hint && <HintBadge title={hint.title}>{hint.body}</HintBadge>}
+          {cardHint && (
+            <HintBadge title={cardHint.title}>{cardHint.body}</HintBadge>
+          )}
 
           {/* Badge Sparkles tetap ditampilkan kalau tidak loading */}
           {!loading && (
@@ -150,35 +164,41 @@ export default function LearningInsightsCard({ feat: featProp, hint }) {
           <StatTile
             label="Exams Taken"
             value={fmtInt(feat?.exams_taken)}
-            hint="Total ujian diikuti"
+            helper="Total ujian diikuti"
+            hint={hints.examsTaken}
           />
 
           {/* Detail nilai & aktivitas */}
           <StatTile
             label="Avg Exam Score"
             value={fmt1(feat?.avg_exam_score)}
-            hint="Rata-rata nilai ujian"
+            helper="Rata-rata nilai ujian"
+            hint={hints.avgExamScore}
             tone={passTone}
           />
           <StatTile
             label="Study Minutes"
             value={fmtInt(feat?.study_minutes)}
-            hint="Total menit belajar"
+            helper="Total menit belajar"
+            hint={hints.studyMinutes}
           />
           <StatTile
             label="Avg Submission Rating"
             value={fmt1(feat?.avg_submission_rating)}
-            hint="Kualitas tugas"
+            helper="Kualitas tugas"
+            hint={hints.avgSubmissionRating}
           />
           <StatTile
             label="Tutorials Completed"
             value={fmtInt(feat?.tutorials_completed)}
-            hint="Materi selesai dipelajari"
+            helper="Materi selesai dipelajari"
+            hint={hints.tutorialsCompleted}
           />
           <StatTile
             label="Last Activity (days)"
             value={fmtInt(feat?.days_since_last_activity)}
-            hint="Sejak terakhir aktif"
+            helper="Sejak terakhir aktif"
+            hint={hints.lastActivityDays}
             tone={dropoutTone}
           />
         </div>
