@@ -1,0 +1,19 @@
+Semua folder sudah diberi angka, berati itu urutan membuatnya.
+Setiap folder ada penjelasannya buat apa aja data itu digunakan.
+
+Deskripsi Singkat Folder:
+Dataset Used:
+Data yang akan digunakan pada proses Cleaning.
+
+Cleaning Dataset:
+Data yang sudah dibersihkan dan siap untuk merging data (bisa untuk database awal dashboard)
+
+Merging Dataset Cleaning:
+Data yang berisi hasil penggabungan dataset pada folder Cleaning Dataset. Bisa digunakan untuk dashboard dan Modeling.
+
+(Tambahan)History Belajar User:
+Data yang digunakan untuk menampilkan deskripsi modul apa saja yang dikerjakan oleh User 
+
+Modeling (Coming Soon ya ges)
+
+======================== Salam Interaksi ======================

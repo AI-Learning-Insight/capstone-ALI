@@ -1,0 +1,15 @@
+summary_tracking.csv:
+Mengandung ringkasan aktivitas pelacakan (tracking) untuk setiap pengguna. Kolom-kolomnya meliputi user_id, total_tracking_events (jumlah total interaksi pengguna dengan tutorial), dan total_completed_modules (jumlah modul yang berhasil diselesaikan).
+Tujuan: Untuk mendapatkan gambaran seberapa aktif pengguna berinteraksi dengan konten dan seberapa banyak modul yang mereka selesaikan. Ini membantu memahami tingkat keterlibatan pengguna.
+
+summary_submission.csv:
+Berisi ringkasan data pengiriman (submission) kuis atau tugas oleh pengguna. Kolom-kolomnya meliputi user_id, total_submissions (jumlah total pengiriman yang dilakukan pengguna), dan avg_submission_rating (rata-rata nilai yang diterima pengguna untuk pengirimannya).
+Tujuan: Untuk mengevaluasi performa pengguna dalam mengerjakan tugas dan kuis, serta seberapa sering mereka mencoba mengirimkan jawaban.
+
+summary_completion.csv:
+Menyediakan ringkasan mengenai penyelesaian perjalanan (journey) belajar oleh pengguna. Kolom-kolomnya mencakup user_id, avg_study_duration (rata-rata durasi belajar pengguna per journey yang diselesaikan), dan avg_completion_rating (rata-rata rating submission untuk journey yang diselesaikan).
+Tujuan: Memberikan insight tentang efisiensi belajar pengguna dan kualitas akhir dari journey yang mereka selesaikan.
+
+summary_exam.csv:
+Mengandung ringkasan hasil ujian untuk setiap pengguna. Kolom-kolomnya meliputi user_id, avg_exam_score (rata-rata skor yang didapatkan pengguna di semua ujian), dan exam_pass_rate (persentase ujian yang berhasil dilewati pengguna).
+Tujuan: Untuk mengukur keberhasilan akademik atau penguasaan materi oleh pengguna melalui hasil ujian.

@@ -17,5 +17,5 @@ COPY . .
 EXPOSE 8080
 
 # Command default (untuk development)
-# Di sini kita jalankan migrasi dulu, lalu start server
-CMD ["sh", "-c", "npm run migrate:latest && npm run dev"]
+# Di sini kita jalankan migrasi + seed user demo dulu, lalu start server
+CMD ["sh", "-c", "npm run migrate:latest && npm run seed:dev && npm run dev"]

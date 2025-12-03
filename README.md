@@ -48,7 +48,10 @@ capstone/
    ```
 4. **Login / testing**  
    - Default password user baru: `Student@123`
-   - Akun mentor demo: `mentor@example.com / Mentor@123`
+   - Akun demo siap pakai (jalankan `npm run seed:dev` di `backend/` jika butuh secara lokal; Compose menjalankannya otomatis):  
+     - `student@example.com / Student@123`  
+     - `mentor@example.com / Mentor@123`  
+     - `admin@example.com / Admin@123`
    - Gunakan halaman `/login` lalu jelajahi dashboard/mentor/todo.
 
 ## Jalankan via Docker Compose
@@ -57,11 +60,16 @@ capstone/
 docker compose build
 
 docker compose up        # backend di :8080, frontend di :5173, postgres di :5433
+
+# setelah semua container hidup, isi data ML + user app langsung siap login
+docker compose exec backend npm run ml:bootstrap      # migrasi + ingest CSV ML
+docker compose exec backend npm run import:ml-users   # buat akun app dari ml_users (password default: Student@123)
 ```
 Catatan:
-- Backend container otomatis menjalankan migrasi + dev server (lihat CMD di Dockerfile).
+- Backend container otomatis menjalankan migrasi + seed user demo lalu dev server (lihat CMD di Dockerfile).
 - Volume `./backend` dan `./frontend` di-mount sehingga perubahan kode langsung terlihat.
 - `DATABASE_URL` di backend sudah menunjuk ke service `db`, jadi tidak memakai `localhost`.
+- Akun hasil import ML memakai password default `Student@123`; bisa diubah lewat env `DEFAULT_ML_PASSWORD` sebelum menjalankan `npm run import:ml-users`.
 
 ## Variabel Lingkungan Utama
 | Layanan  | File                    | Keterangan                                                            |

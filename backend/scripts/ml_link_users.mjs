@@ -10,8 +10,13 @@ WHERE u.ml_user_id IS NULL
 
 const run = async () => {
   const res = await knex.raw(sql);
-  console.log('Linked users → ml_users:', res.rowCount ?? 'done');
+  const rowCount = res.rowCount ?? res.rows?.length ?? 0;
+  console.log(`[ml_link_users] linked ${rowCount} users to ml_users`);
   await knex.destroy();
 };
 
-run().catch(async (e) => { console.error(e); await knex.destroy(); process.exit(1); });
+run().catch(async (e) => {
+  console.error(e);
+  await knex.destroy();
+  process.exit(1);
+});

@@ -7,6 +7,63 @@ import knexfile from '../knexfile.js';
 
 const db = knex(knexfile);
 
+// Pastikan tabel agregat final_dataset tersedia
+async function ensureFinalDatasetTable() {
+  const exists = await db.schema.hasTable('ml_final_dataset');
+  if (!exists) {
+    await db.schema.createTable('ml_final_dataset', (t) => {
+      t.bigInteger('user_id').primary();
+      t.string('display_name');
+      t.string('name');
+      t.string('email');
+      t.string('phone');
+      t.integer('total_tracking_events');
+      t.integer('total_completed_modules');
+      t.integer('total_submissions');
+      t.decimal('avg_submission_rating');
+      t.decimal('avg_study_duration');
+      t.decimal('avg_completion_rating');
+      t.decimal('avg_exam_score');
+      t.decimal('exam_pass_rate');
+    });
+  } else {
+    await db('ml_final_dataset').truncate();
+  }
+}
+
+// Buat ulang materialized view ml_user_features berbasis final_dataset
+async function rebuildFeaturesViewFromFinal() {
+  await db.raw('DROP MATERIALIZED VIEW IF EXISTS ml_user_features');
+  await db.raw(`
+    CREATE MATERIALIZED VIEW ml_user_features AS
+    SELECT
+      fd.user_id                        AS ml_user_id,
+      fd.email,
+      fd.display_name,
+      fd.name,
+      coalesce(fd.total_completed_modules, 0) AS enrollments_count,
+      coalesce(fd.total_completed_modules, 0) AS tutorials_completed,
+      coalesce(fd.avg_study_duration, 0)      AS avg_study_duration,
+      coalesce(fd.avg_study_duration, 0)      AS study_minutes,
+      coalesce(fd.avg_submission_rating, 0)   AS avg_submission_rating,
+      coalesce(fd.avg_completion_rating, 0)   AS avg_completion_rating,
+      coalesce(fd.total_submissions, 0)       AS total_submissions,
+      coalesce(fd.total_tracking_events, 0)   AS total_tracking_events,
+      NULL::timestamp                         AS last_enrolled_at,
+      NULL::int                               AS exams_taken,
+      coalesce(fd.avg_exam_score, 0)          AS avg_exam_score,
+      coalesce(fd.exam_pass_rate, 0)          AS pass_rate,
+      NULL::timestamp                         AS last_exam_activity,
+      NULL::timestamp                         AS last_track_activity,
+      NULL::timestamp                         AS last_activity_at,
+      NULL::double precision                  AS days_since_last_activity
+    FROM ml_final_dataset fd;
+  `);
+  await db.raw(
+    'CREATE UNIQUE INDEX IF NOT EXISTS idx_ml_user_features ON ml_user_features(ml_user_id);'
+  );
+}
+
 // ----------------- HELPERS -----------------
 
 function parseTS(v) {
@@ -181,9 +238,12 @@ async function ingestCSV(file, table, mapRow, options = {}) {
 async function main() {
   const base = process.argv[2];
   if (!base) {
-    console.error('Usage: node scripts/ml_ingest.mjs <path-to-dataset_pisah>');
+    console.error('Usage: node scripts/ml_ingest.mjs <path-to-dataset>');
     process.exit(1);
   }
+
+  // Pastikan tabel agregat final_dataset siap dan kosong
+  await ensureFinalDatasetTable();
 
   // Preload numeric specs
   const numericSpecs = {
@@ -195,8 +255,30 @@ async function main() {
     ml_tracking: await getNumericSpec('ml_tracking'),
   };
 
-  // Helper path ke raw_data
+  // Helper path ke data_ml
   const p = (f) => path.join(base, f);
+
+  // ---- final_dataset.csv -> ml_final_dataset (agregat) ----
+  await ingestCSV(
+    p('final_dataset.csv'),
+    'ml_final_dataset',
+    (r) => ({
+      user_id: toInt(r.user_id),
+      display_name: r.display_name || null,
+      name: r.name || null,
+      email: r.email || null,
+      phone: r.phone || null,
+      total_tracking_events: toInt(r.total_tracking_events),
+      total_completed_modules: toInt(r.total_completed_modules),
+      total_submissions: toInt(r.total_submissions),
+      avg_submission_rating: toFloat(r.avg_submission_rating),
+      avg_study_duration: toFloat(r.avg_study_duration),
+      avg_completion_rating: toFloat(r.avg_completion_rating),
+      avg_exam_score: toFloat(r.avg_exam_score),
+      exam_pass_rate: toFloat(r.exam_pass_rate),
+    }),
+    { upsertKey: 'user_id' }
+  );
 
   // ---- developer_journeys.csv -> ml_journeys ----
   console.log('\nImporting developer_journeys.csv → ml_journeys');
@@ -450,11 +532,11 @@ async function main() {
 
   // --- clustered_learners.csv (opsional, hasil modeling offline) ---
   try {
-    // "base" = path ke raw_data
+    // "base" = path ke data_ml
     const candidates = [
-      // ../.. dari raw_data -> Project_struktur/modeling/clustered_learners.csv
+      // ../.. dari data_ml -> Capstone_v2/modeling/clustered_learners.csv
       path.join(base, '..', '..', 'modeling', 'clustered_learners.csv'),
-      // ../ dari raw_data -> data/modeling/clustered_learners.csv (jika modeling diletakkan di dalam /data)
+      // ../ dari data_ml -> data/modeling/clustered_learners.csv (jika modeling diletakkan di dalam /data)
       path.join(base, '..', 'modeling', 'clustered_learners.csv'),
       // same dir fallback
       path.join(base, 'clustered_learners.csv'),
@@ -499,6 +581,7 @@ async function main() {
   }
 
   // refresh materialized view
+  await rebuildFeaturesViewFromFinal();
   await db.raw('REFRESH MATERIALIZED VIEW CONCURRENTLY ml_user_features;');
 
   console.log('\nAll done.');

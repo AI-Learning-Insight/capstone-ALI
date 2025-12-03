@@ -5,8 +5,6 @@ import {
   GraduationCap,
   Menu,
   X,
-  Home,
-  Info,
   LayoutDashboard,
   LogIn,
   LogOut,
@@ -14,7 +12,7 @@ import {
   Sun,
 } from "lucide-react";
 import { useAuth } from "../lib/auth-context";
-import { useTheme } from "../lib/theme-context"; // ⬅️ TAMBAH INI
+import { useTheme } from "../lib/theme-context"; // TAMBAH INI
 
 function NavItem({ to, children, icon: Icon }) {
   return (
@@ -38,7 +36,7 @@ function NavItem({ to, children, icon: Icon }) {
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const { user, logout } = useAuth?.() || {}; // aman kalau hook berbeda
-  const { theme, toggleTheme } = useTheme(); // ⬅️ AMBIL TEMA & TOGGLE
+  const { theme, toggleTheme } = useTheme(); // AMBIL TEMA & TOGGLE
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -63,12 +61,6 @@ export default function Navbar() {
     () => (role === "mentor" ? "/mentor" : "/dashboard"),
     [role]
   );
-
-  // Cek apakah sedang di halaman dashboard (user / mentor)
-  const onDashboard =
-    location.pathname.startsWith("/dashboard") ||
-    location.pathname.startsWith("/mentor") ||
-    location.pathname.startsWith("/profile");
 
   useEffect(() => setOpen(false), [location.pathname]);
 
@@ -101,19 +93,6 @@ export default function Navbar() {
 
         {/* Desktop nav */}
         <div className="hidden items-center gap-2 md:flex">
-          {/* Home & About hanya muncul jika BUKAN di dashboard */}
-          {!onDashboard && (
-            <>
-              <NavItem to="/" icon={Home}>
-                Home
-              </NavItem>
-              <NavItem to="/about" icon={Info}>
-                About
-              </NavItem>
-            </>
-          )}
-
-          {/* Dashboard → otomatis sesuai role, hanya kalau sudah login */}
           {isAuth && (
             <NavItem to={dashboardPath} icon={LayoutDashboard}>
               Dashboard
@@ -180,49 +159,35 @@ export default function Navbar() {
               Login
             </Link>
           )}
-          <button
-            onClick={() => setOpen((v) => !v)}
-            className="inline-flex items-center rounded-xl border border-slate-300 p-2 text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:border-slate-600 dark:text-slate-100 dark:hover:bg-slate-800 dark:focus:ring-slate-600"
-            aria-label="Toggle navigation"
-            aria-expanded={open}
-          >
-            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
+
+          {isAuth && (
+            <button
+              onClick={() => setOpen((v) => !v)}
+              className="inline-flex items-center rounded-xl border border-slate-300 p-2 text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:border-slate-600 dark:text-slate-100 dark:hover:bg-slate-800 dark:focus:ring-slate-600"
+              aria-label="Toggle navigation"
+              aria-expanded={open}
+            >
+              {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+          )}
         </div>
       </nav>
 
       {/* Mobile menu */}
-      {open && (
+      {open && isAuth && (
         <div className="md:hidden">
           <div className="space-y-1 border-t border-slate-200 bg-white px-4 pb-4 pt-2 dark:border-slate-800 dark:bg-slate-900">
-            {/* Home & About hanya muncul jika BUKAN di dashboard */}
-            {!onDashboard && (
-              <>
-                <NavItem to="/" icon={Home}>
-                  Home
-                </NavItem>
-                <NavItem to="/about" icon={Info}>
-                  About
-                </NavItem>
-              </>
-            )}
+            <NavItem to={dashboardPath} icon={LayoutDashboard}>
+              Dashboard
+            </NavItem>
 
-            {/* Dashboard → otomatis sesuai role, hanya kalau sudah login */}
-            {isAuth && (
-              <NavItem to={dashboardPath} icon={LayoutDashboard}>
-                Dashboard
-              </NavItem>
-            )}
-
-            {isAuth && (
-              <button
-                onClick={handleLogout}
-                className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200 dark:focus:ring-slate-600"
-              >
-                <LogOut className="h-4 w-4" />
-                Logout
-              </button>
-            )}
+            <button
+              onClick={handleLogout}
+              className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200 dark:focus:ring-slate-600"
+            >
+              <LogOut className="h-4 w-4" />
+              Logout
+            </button>
           </div>
         </div>
       )}

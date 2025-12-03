@@ -17,6 +17,10 @@ async function main() {
       ml_users
     RESTART IDENTITY CASCADE;
   `);
+  const hasFinal = await knex.schema.hasTable('ml_final_dataset');
+  if (hasFinal) {
+    await knex.raw('TRUNCATE TABLE ml_final_dataset RESTART IDENTITY CASCADE;');
+  }
   console.log('Done truncate.');
   await knex.destroy();
 }
