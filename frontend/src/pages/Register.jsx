@@ -26,7 +26,7 @@ export default function Register() {
 
     try {
       setLoading(true);
-      await register(n, em, pw); // ⬅️ biarkan kontrak lama
+      await register(n, em, pw); // -> biarkan kontrak lama
       nav('/dashboard');
     } catch (e) {
       setErr(e?.response?.data?.message || 'Terjadi kesalahan');
@@ -93,7 +93,7 @@ export default function Register() {
           className="w-full bg-blue-600 text-white py-2.5 rounded-xl shadow disabled:opacity-60"
           disabled={loading}
         >
-          {loading ? 'Memproses…' : 'Buat Akun'}
+          {loading ? 'Memproses...' : 'Buat Akun'}
         </button>
 
         <p className="text-center text-sm mt-3">

@@ -53,7 +53,7 @@ export const updateProfile = async (request, h) => {
     stripUnknown: true,
   });
 
-  // 🔒 ID siswa tidak boleh di-update lewat halaman profil
+  // Lock ID siswa tidak boleh di-update lewat halaman profil
   delete payload.ml_user_id;
   delete payload.id;
 
@@ -101,7 +101,7 @@ export const changePassword = async (request, h) => {
     .code(200);
 };
 
-// ✅ versi baru uploadAvatar
+// Versi baru uploadAvatar
 export async function uploadAvatar(request, h) {
   // kredensial user
   const creds = request.auth?.credentials || {};
@@ -111,7 +111,7 @@ export async function uploadAvatar(request, h) {
     throw Boom.unauthorized('User tidak ditemukan di token');
   }
 
-  // ⬇️ HARUS sama dengan nama field di FormData: "avatar"
+  // Nama field harus sama dengan FormData: "avatar"
   const file = request.payload.avatar;
 
   if (!file || !file.hapi) {

@@ -1,0 +1,9 @@
+1. Server hidup → model.pkl & scaler.pkl di-load
+2. User melakukan aktivitas → data masuk DB
+3. React minta prediksi → kirim user_id
+4. Backend:
+   - ambil data mentah user itu
+   - hitung fitur
+   - scale fitur
+   - prediksi label
+5. Backend kirim hasil ke React

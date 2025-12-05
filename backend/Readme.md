@@ -1,4 +1,4 @@
-﻿# AI Learning Insight – Backend
+# AI Learning Insight - Backend
 
 Layanan backend untuk platform AI Learning Insight yang menangani autentikasi, manajemen data pembelajaran, dan paparan fitur machine learning. Dibangun dengan Hapi.js, Knex, dan PostgreSQL.
 
@@ -47,7 +47,7 @@ docker run -d --name ali-pg ^
      "start": "node src/server.js",
      "migrate:latest": "knex migrate:latest --knexfile ./knexfile.js",
      "migrate:rollback": "knex migrate:rollback --knexfile ./knexfile.js",
-     "ml:bootstrap": "npm run migrate:latest && node scripts/ml_ingest.mjs \"./ml/source/Capstone_v2/data/data_ml\"",
+     "ml:bootstrap": "npm run migrate:latest && node scripts/ml_ingest.mjs \"./ml/source/Dataset-Dan-Model-main\"",
      "ml:link": "node scripts/ml_link_users.mjs",
      "ml:candidates": "node scripts/ml_debug_candidates.mjs",
      "ml:debug": "node scripts/ml_debug_counts.mjs",
@@ -55,16 +55,16 @@ docker run -d --name ali-pg ^
    }
    ```
 4. **Siapkan database & data ML**
-   - Dataset: `backend/ml/source/Capstone_v2/`
-     - Raw CSV: `data/data_ml/*.csv`
-     - Opsional cluster: `modeling/clustered_learners.csv`
+   - Dataset: `backend/ml/source/Dataset-Dan-Model-main/`
+     - Folder `[1] Dataset Used`, `[2] Cleaning Dataset`, `[3] Merging Dataset Cleaning` (script ingest otomatis menemukan nama/struktur ini)
+     - Opsional cluster: letakkan `clustered_learners.csv` berdampingan bila ada
    - Jalankan:
      ```bash
      npm run ml:bootstrap   # migrasi + ingest semua CSV ke tabel ml_*
      npm run ml:link        # opsional, tautkan akun users dengan ml_users via email
      ```
    - Pengguna Windows: kutip path yang mengandung spasi (contoh skrip sudah melakukannya).
-   - Opsional: jalankan `npm run seed:dev` untuk membuat akun demo (student/mentor/admin) dengan password default sehingga login bisa langsung dicoba.
+   - Opsional: jalankan `npm run seed:mentor` jika ingin memastikan ada akun mentor statis (lihat skrip).
 5. **Jalankan server**
    ```bash
    npm run dev
@@ -98,9 +98,11 @@ scripts/
   ml_debug_counts.mjs
   ml_link_one.mjs
 ml/
-  source/Capstone_v2/
-    data/data_ml/*.csv
-    modeling/clustered_learners.csv
+  source/Dataset-Dan-Model-main/
+    [1] Dataset Used/
+    [2] Cleaning Dataset/
+    [3] Merging Dataset Cleaning/
+    clustered_learners.csv (opsional)
 uploads/             # file avatar (sudah di .gitignore)
 docs/api-contract.md # dokumentasi API detail (opsional)
 ```
@@ -148,14 +150,11 @@ Gunakan `npm run ml:candidates` untuk melihat email yang punya data ML kaya, daf
 
 ## Troubleshooting
 - **Script `migrate:latest` tidak ada**: pastikan bagian `scripts` di `package.json` sudah dibuat atau jalankan langsung `npx knex migrate:latest --knexfile ./knexfile.js`.
-- **`clustered_learners.csv not found`**: letakkan file di `ml/source/Capstone_v2/modeling/clustered_learners.csv` atau `ml/source/Capstone_v2/data/modeling/clustered_learners.csv`.
+- **`clustered_learners.csv not found`**: letakkan file di `ml/source/Dataset-Dan-Model-main/clustered_learners.csv` atau berdampingan dengan folder dataset lain.
 - **`/ml/learner-type` 404**: jalankan `npm run ml:link` (user belum terhubung ke data ML) dan pastikan `ml.routes.js` sudah diregister di `routes/index.js`.
 - **Auth error**: cek `JWT_SECRET` dan header `Authorization: Bearer <token>`.
 - **DB connect error**: sesuaikan `DATABASE_URL` (perhatikan port 5432 vs 5433).
 
 ## Kredensial Demo
 - Default password user baru: `Student@123`
-- Akun demo (dibuat via `npm run seed:dev` atau otomatis di Docker):
-  - Student: `student@example.com / Student@123`
-  - Mentor: `mentor@example.com / Mentor@123`
-  - Admin: `admin@example.com / Admin@123`
+- Akun mentor statis (opsional): jalankan `npm run seed:mentor` (default `mentor@example.com / Mentor@123`, bisa diubah via env `MENTOR_*`).

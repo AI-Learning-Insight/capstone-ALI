@@ -7,4 +7,4 @@ types.setTypeParser(1700, toNum);
 types.setTypeParser(700, toNum);
 types.setTypeParser(701, toNum);
 
-// NOTE: jangan set int8 (OID 20) ke Number kalau kamu pakai big id — bisa overflow.
+// NOTE: jangan set int8 (OID 20) ke Number kalau pakai big id karena bisa overflow.

@@ -108,7 +108,7 @@ export default function Login() {
               className="w-full bg-transparent outline-none text-sm text-slate-900 placeholder-slate-400 dark:text-slate-100 dark:placeholder-slate-500"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
+              placeholder="********"
             />
           </div>
         </div>

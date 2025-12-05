@@ -1,4 +1,4 @@
-﻿# AI Learning Insight (ALI)
+# AI Learning Insight (ALI)
 
 Monorepo platform pembelajaran adaptif yang memadukan backend Hapi.js (ingest fitur ML + insight API) dan frontend React/Tailwind untuk dashboard siswa dan mentor. Repositori ini menampung semua layanan dan orkestrasi Docker Compose agar pengalaman setup konsisten.
 
@@ -19,7 +19,7 @@ capstone/
 ## Prasyarat
 - Node.js 20+ dan npm 10+
 - Docker Desktop (opsional, wajib jika memakai `docker-compose`)
-- Dataset ML lokal berada di `backend/ml/source/Project_struktur/` (lihat README backend)
+- Dataset ML lokal berada di `backend/ml/source/Dataset-Dan-Model-main/` (lihat README backend)
 
 ## Setup Lokal (Non-Docker)
 1. **Sediakan Postgres**  
@@ -48,10 +48,7 @@ capstone/
    ```
 4. **Login / testing**  
    - Default password user baru: `Student@123`
-   - Akun demo siap pakai (jalankan `npm run seed:dev` di `backend/` jika butuh secara lokal; Compose menjalankannya otomatis):  
-     - `student@example.com / Student@123`  
-     - `mentor@example.com / Mentor@123`  
-     - `admin@example.com / Admin@123`
+   - (Opsional) Akun mentor statis: jalankan `npm run seed:mentor` di `backend/` (default `mentor@example.com / Mentor@123`, dapat diubah via env `MENTOR_*`).
    - Gunakan halaman `/login` lalu jelajahi dashboard/mentor/todo.
 
 ## Jalankan via Docker Compose
@@ -64,6 +61,7 @@ docker compose up        # backend di :8080, frontend di :5173, postgres di :543
 # setelah semua container hidup, isi data ML + user app langsung siap login
 docker compose exec backend npm run ml:bootstrap      # migrasi + ingest CSV ML
 docker compose exec backend npm run import:ml-users   # buat akun app dari ml_users (password default: Student@123)
+# (opsional) buat akun mentor statis: docker compose exec backend npm run seed:mentor
 ```
 Catatan:
 - Backend container otomatis menjalankan migrasi + seed user demo lalu dev server (lihat CMD di Dockerfile).
@@ -86,9 +84,9 @@ Lengkapnya, lihat contoh di masing-masing README layanan.
 - Compose: `docker compose up`, `docker compose down -v` (hapus volume DB jika perlu reset data).
 
 ## Alur Data ML (Ringkas)
-1. CSV (`ml/source/Project_struktur/data/raw_data/*.csv`) diproses oleh `scripts/ml_ingest.mjs` -> tabel `ml_users`, `ml_registration`, `ml_exam`, dll.
+1. CSV (`ml/source/Dataset-Dan-Model-main`) diproses oleh `scripts/ml_ingest.mjs` -> tabel `ml_users`, `ml_registration`, `ml_exam`, dll. Script otomatis mengenali struktur `[1] Dataset Used`, `[2] Cleaning Dataset`, dan `[3] Merging Dataset Cleaning`.
 2. Materialized view `ml_user_features` otomatis di-refresh selama ingest.
-3. Opsional: file `modeling/clustered_learners.csv` membentuk tabel `ml_learner_cluster` untuk klasifikasi gaya belajar.
+3. Opsional: file `clustered_learners.csv` membentuk tabel `ml_learner_cluster` untuk klasifikasi gaya belajar.
 4. Jalankan `npm run ml:link` agar akun aplikasi terhubung dengan data ML berdasarkan email.
 
 ## Troubleshooting Cepat

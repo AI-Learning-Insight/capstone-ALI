@@ -13,7 +13,7 @@ const SAFE_FIELDS = [
   'bio',
   'grade',
   'school_id',
-  'ml_user_id',        
+  'ml_user_id',
   'created_at',
   'updated_at',
 ];
@@ -28,12 +28,12 @@ export const findUserByEmailWithSecret = (email) =>
       'password_hash',
       'role',
       'grade',
-      'ml_user_id',   
+      'ml_user_id',
     )
     .where({ email })
     .first();
 
-// 🔧 ALIAS untuk kompatibilitas lama (dipakai di auth.controller.js)
+// Alias untuk kompatibilitas lama (dipakai di auth.controller.js)
 export const findUserByEmail = (email) => findUserByEmailWithSecret(email);
 
 // --- SAFE GET (/me, dll.) ---
@@ -64,8 +64,7 @@ export const createUser = async ({ name, email, password_hash }) => {
 };
 
 export const updateUser = async (id, patch) => {
-  // ⚠️ ID siswa (ml_user_id) hanya diisi dari proses mapping ML,
-  // BUKAN dari halaman profil.
+  // ID siswa (ml_user_id) hanya diisi dari proses mapping ML, bukan dari halaman profil.
   const allowed = [
     'name',
     'avatar_url',
@@ -90,7 +89,7 @@ export const updateUser = async (id, patch) => {
   return u;
 };
 
-// === 🔐 Tambahan khusus password (tidak ganggu updateUser/Avatar) ===
+// --- Tambahan khusus password (tidak ganggu updateUser/Avatar) ---
 export const findUserSecretById = (id) =>
   db('users')
     .select('id', 'password_hash')

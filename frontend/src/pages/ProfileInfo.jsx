@@ -52,7 +52,7 @@ function allowPhoneKeys(e) {
 }
 
 export default function ProfileInfo() {
-  const { user, refreshUser } = useAuth();   // ⬅️ sekarang ambil refreshUser juga
+  const { user, refreshUser } = useAuth();   // -> sekarang ambil refreshUser juga
 
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({ phone: "" });
@@ -121,7 +121,7 @@ export default function ProfileInfo() {
     }
 
     const formData = new FormData();
-    // ⬇️ NAMA FIELD HARUS 'avatar' (cocok dengan backend)
+    // down NAMA FIELD HARUS 'avatar' (cocok dengan backend)
     formData.append("avatar", file);
 
     try {
@@ -173,7 +173,7 @@ export default function ProfileInfo() {
       };
 
       await notify.promise(api.patch("/me", payload), {
-        loading: "Menyimpan perubahan…",
+        loading: "Menyimpan perubahan...",
         success: "Perubahan disimpan",
         error: (err) =>
           err?.response?.data?.message || "Gagal menyimpan perubahan",
@@ -375,7 +375,7 @@ export default function ProfileInfo() {
                         onChange={(e) =>
                           setMe({ ...me, bio: e.target.value })
                         }
-                        placeholder="Ceritakan tentang dirimu…"
+                        placeholder="Ceritakan tentang dirimu..."
                       />
                     </Field>
                   </div>

@@ -1,4 +1,4 @@
-﻿# AI Learning Insight Frontend
+# AI Learning Insight Frontend
 
 Antarmuka React untuk platform AI Learning Insight (ALI). Aplikasi ini menyediakan dashboard siswa dan mentor, pengelolaan profil, todo, assessment, serta menampilkan insight ML yang diambil dari backend Hapi + PostgreSQL.
 

@@ -9,6 +9,6 @@ export const notify = {
   info:    (msg, opts={}) => toast(msg,         { ...base, ...opts }),
   loading: (msg, opts={}) => toast.loading(msg, { ...base, ...opts }),
   // helper untuk request async
-  promise: (p, { loading='Memproses…', success='Berhasil', error='Terjadi kesalahan' }, opts={}) =>
+  promise: (p, { loading='Memproses...', success='Berhasil', error='Terjadi kesalahan' }, opts={}) =>
     toast.promise(p, { loading, success, error }, { ...base, ...opts })
 };

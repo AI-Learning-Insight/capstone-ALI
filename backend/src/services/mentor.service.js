@@ -27,22 +27,22 @@ const softmax = (arr, tau = 0.7) => {
   return ex.map((e) => e / sum);
 };
 
-// 👉 Fallback: hitung probabilitas dari fitur (aproksimasi)
-//  - fast   : pass↑, avg↑, menit↓, idle↓
-//  - consistent : pass↑, avg↑, menit "sedang", idle↓
-//  - reflective : menit↑, rating↑ (pass/avg tetap berkontribusi)
+// -> Fallback: hitung probabilitas dari fitur (aproksimasi)
+//  - fast   : pass up, avg up, menit down, idle down
+//  - consistent : pass up, avg up, menit sedang, idle down
+//  - reflective : menit up, rating up (pass/avg tetap berkontribusi)
 function probsFromFeatures(f = {}) {
   const pass = clamp(N(f.pass_rate));               // 0..1
   const avg = clamp(N(f.avg_exam_score) / 100);     // 0..1
   const minutes = N(f.study_minutes);
   const minNorm = clamp(minutes / 900);             // 0..1 (900 menit jadi saturasi)
   const idleNorm = clamp(N(f.days_since_last_activity, 30) / 30);  // 0..1
-  const ratingNorm = clamp((N(f.avg_submission_rating) - 1) / 4);  // 0..1 (1..5 → 0..1)
+  const ratingNorm = clamp((N(f.avg_submission_rating) - 1) / 4);  // 0..1 (1..5 -> 0..1)
 
   const scoreFast =
     0.35 * pass + 0.35 * avg + 0.2 * (1 - minNorm) + 0.1 * (1 - idleNorm);
 
-  // preferensi menit "sedang" ~ 0.4 (≈ 360 menit bila skala 900)
+  // preferensi menit "sedang" ~ 0.4 (~ 360 menit bila skala 900)
   const midPref = 1 - Math.min(1, Math.abs(minNorm - 0.4) / 0.4);
   const scoreCons =
     0.4 * pass + 0.25 * avg + 0.2 * midPref + 0.15 * (1 - idleNorm);
@@ -178,7 +178,7 @@ export async function listMentees({ page = 1, limit = 20, search = '', style } =
       category: styleDerived === 'fast' ? 'A' : styleDerived === 'consistent' ? 'B' : 'C',
       cluster: c.cluster ?? null,
 
-      // ⬇️ kirim probabilitas 0..1
+      // down kirim probabilitas 0..1
       prob_fast,
       prob_consistent,
       prob_reflective,
@@ -188,8 +188,12 @@ export async function listMentees({ page = 1, limit = 20, search = '', style } =
       pass_rate: f.pass_rate == null ? 0 : N(f.pass_rate),
       avg_exam_score: f.avg_exam_score == null ? 0 : N(f.avg_exam_score),
       study_minutes: N(f.study_minutes),
+      avg_study_duration: f.avg_study_duration == null ? 0 : N(f.avg_study_duration),
       avg_submission_rating: f.avg_submission_rating == null ? 0 : N(f.avg_submission_rating),
+      avg_completion_rating: f.avg_completion_rating == null ? 0 : N(f.avg_completion_rating),
       tutorials_completed: N(f.tutorials_completed),
+      total_tracking_events: N(f.total_tracking_events),
+      total_submissions: N(f.total_submissions),
       days_since_last_activity: f.days_since_last_activity == null ? null : N(f.days_since_last_activity),
     };
   });

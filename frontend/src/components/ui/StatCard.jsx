@@ -27,7 +27,7 @@ export default function StatCard({
   value,
   helper,
   tone = "indigo",
-  hint,              // ⬅️ prop baru
+  hint,              // -> prop baru
 }) {
   const c = schemes[tone] ?? schemes.indigo;
 

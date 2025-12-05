@@ -41,18 +41,18 @@ export function getMenteePrefix(userOrId, { defaultPrefix = 'ML' } = {}) {
   return defaultPrefix;
 }
 
-// Format final: "<PREFIX>-<ID>" atau "—" kalau belum ada
+// Format final: "<PREFIX>-<ID>" atau "-" kalau belum ada
 export function formatMenteeCode(userOrId, opts = {}) {
   const { defaultPrefix = 'ML' } = opts;
 
-  if (!userOrId) return '—';
+  if (!userOrId) return '-';
 
   if (typeof userOrId === 'object' && userOrId.class_code) {
     return userOrId.class_code;
   }
 
   const rawId = getRawMenteeId(userOrId);
-  if (!rawId) return '—';
+  if (!rawId) return '-';
 
   const prefix = getMenteePrefix(userOrId, { defaultPrefix });
   if (!prefix) return String(rawId);

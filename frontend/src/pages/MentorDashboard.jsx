@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { fetchMentorOverview, fetchMentorMentees } from '../lib/api-mentor';
 import { useAuth } from '../lib/auth-context';
 import { Users2, Smartphone, Zap, AlertTriangle, Search } from 'lucide-react';
-// ❌ Navbar dihapus
+// Navbar dihapus
 import MentorMenteeRadar from '../features/mentor/MentorMenteeRadar.jsx';
 
 // ---------- filter options ----------
@@ -30,7 +30,7 @@ const initialsOf = (s) => {
 const styleLabel = (s) =>
   s === 'fast' ? 'Fast Learner' : s === 'reflective' ? 'Reflective Learner' : 'Consistent Learner';
 
-// ⬇️ FAST: biru, CONSISTENT: hijau, REFLECTIVE: merah muda
+// down FAST: biru, CONSISTENT: hijau, REFLECTIVE: merah muda
 const styleBadgeClass = (s) => {
   if (s === 'fast') {
     return 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-700';
@@ -159,15 +159,40 @@ function ProbRow({ pf, pc, pr }) {
 
 function MetricTile({ label, value }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:bg-slate-800 dark:border-slate-700">
-      <div className="text-[11px] text-slate-500 dark:text-slate-400">{label}</div>
-      <div className="text-sm font-semibold">{value ?? '-'}</div>
+    <div className="rounded-xl border border-slate-200/80 bg-white/70 px-4 py-3 shadow-sm
+                    backdrop-blur dark:bg-slate-900/60 dark:border-slate-700/70">
+      <div className="text-[11px] uppercase tracking-wide text-slate-500 dark:text-slate-400 font-semibold">
+        {label}
+      </div>
+      <div className="mt-1 text-lg font-semibold text-slate-900 dark:text-slate-50">
+        {value ?? '-'}
+      </div>
     </div>
   );
 }
 
 function MenteeRow({ data }) {
   const [open, setOpen] = useState(false);
+  const fmtInt = (v) => {
+    const n = Number(v);
+    if (!Number.isFinite(n)) return '-';
+    return Math.round(n);
+  };
+  const fmtOne = (v) => {
+    const n = Number(v);
+    if (!Number.isFinite(n)) return '-';
+    return n.toFixed(1);
+  };
+  const fmtPct = (v) => {
+    const n = Number(v);
+    if (!Number.isFinite(n)) return '-';
+    return `${Math.round(n * 100)}%`;
+  };
+  const fmtDays = (v) => {
+    const n = Number(v);
+    if (!Number.isFinite(n)) return '-';
+    return `${Math.max(0, Math.round(n))} hari`;
+  };
 
   return (
     <div className="w-full rounded-2xl border bg-white hover:shadow transition px-4 py-3
@@ -185,7 +210,7 @@ function MenteeRow({ data }) {
           className="ml-3 text-xs font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-50"
           onClick={() => setOpen(v => !v)}
         >
-          {open ? 'Tutup ↑' : 'Lihat →'}
+          {open ? 'Tutup ^' : 'Lihat ->'}
         </button>
       </div>
 
@@ -200,13 +225,17 @@ function MenteeRow({ data }) {
       )}
 
       {open && (
-        <div className="mt-3 grid grid-cols-2 md:grid-cols-3 gap-2">
-          <MetricTile label="Exams Taken"   value={Number(data.exams_taken ?? 0)} />
-          <MetricTile label="Pass Rate"     value={`${Math.round(Number(data.pass_rate ?? 0) * 100)}%`} />
-          <MetricTile label="Avg Score"     value={Number(data.avg_exam_score ?? 0).toFixed(1)} />
-          <MetricTile label="Study Minutes" value={Number(data.study_minutes ?? 0)} />
-          <MetricTile label="Avg Rating"    value={Number(data.avg_submission_rating ?? 0).toFixed(1)} />
-          <MetricTile label="Tutorials"     value={Number(data.tutorials_completed ?? 0)} />
+        <div className="mt-3 grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
+          <MetricTile label="Total Submissions"   value={fmtInt(data.total_submissions)} />
+          <MetricTile label="Pass Rate"           value={fmtPct(data.pass_rate)} />
+          <MetricTile label="Avg Score"           value={fmtOne(data.avg_exam_score)} />
+          <MetricTile label="Avg Study Duration"  value={fmtOne(data.avg_study_duration)} />
+          <MetricTile label="Avg Completion Rate" value={fmtOne(data.avg_completion_rating)} />
+          <MetricTile label="Avg Rating"          value={fmtOne(data.avg_submission_rating)} />
+          <MetricTile label="Study Minutes"       value={fmtOne(data.study_minutes)} />
+          <MetricTile label="Tutorials"           value={fmtInt(data.tutorials_completed)} />
+          <MetricTile label="Tracking Events"     value={fmtInt(data.total_tracking_events)} />
+          <MetricTile label="Last Active"         value={fmtDays(data.days_since_last_activity)} />
         </div>
       )}
     </div>
@@ -334,7 +363,7 @@ export default function MentorDashboard() {
           <h1 className="text-xl font-semibold">
             Welcome, Mentor{' '}
             <span className="text-indigo-600 dark:text-indigo-400">{mentor.name}</span>!{' '}
-            <span>👩‍🏫</span>
+            <span>Teacher</span>
           </h1>
         </div>
 
@@ -392,7 +421,7 @@ export default function MentorDashboard() {
             <div className="rounded-2xl border bg-white p-5 shadow-sm
                             border-slate-100 dark:bg-slate-900 dark:border-slate-800">
               <div className="font-semibold mb-2 flex items-center gap-2">
-                <span className="text-emerald-600">🧑‍🎓</span> Mentee Profile
+                <span className="text-emerald-600">Student</span> Mentee Profile
               </div>
 
               <div className="mb-3 flex items-center gap-2">
@@ -432,7 +461,7 @@ export default function MentorDashboard() {
               <div className="space-y-3">
                 {loading ? (
                   <div className="rounded-xl border bg-slate-50 p-4 dark:bg-slate-800 dark:border-slate-700">
-                    Memuat…
+                    Memuat...
                   </div>
                 ) : pageItems.length > 0 ? (
                   pageItems.map((it, idx) => (

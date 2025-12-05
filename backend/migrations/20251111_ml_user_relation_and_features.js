@@ -1,5 +1,5 @@
 export async function up(knex) {
-  // relasi cepat: users (aplikasi) → ml_users (dataset)
+  // relasi cepat: users (aplikasi) -> ml_users (dataset)
   const hasCol = await knex.schema.hasColumn('users', 'ml_user_id');
   if (!hasCol) {
     await knex.schema.alterTable('users', (t) => {

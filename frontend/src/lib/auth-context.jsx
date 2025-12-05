@@ -59,7 +59,7 @@ export function AuthProvider({ children }) {
 
     localStorage.setItem('token', token);
 
-    // ⬇️ PENTING: update state user di context
+    // down PENTING: update state user di context
     const data = await refreshUser();
 
     // biar pemanggil bisa baca role lewat res.user.role

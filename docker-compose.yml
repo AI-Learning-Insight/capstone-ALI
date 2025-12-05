@@ -53,6 +53,11 @@ services:
       - ./backend:/usr/src/app
       # tapi node_modules tetap pakai dari image, bukan dari host
       - /usr/src/app/node_modules
+    # Jalankan migrasi + ingest ML + mapping user ML otomatis saat container start
+    command: >
+      sh -c "npm run ml:bootstrap &&
+             npm run import:ml-users &&
+             npm run dev"
     # CMD utama sudah diset di Dockerfile:
     # npm run migrate:latest && npm run dev
 

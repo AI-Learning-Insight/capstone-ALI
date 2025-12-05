@@ -1,0 +1,5 @@
+## Deskripsi File
+
+*   **`learning_history.csv`**: File ini berisi data riwayat pembelajaran akhir yang telah diproses. Ini mencakup `developer_id` (ID pengembang), `journey_id` (ID perjalanan pembelajaran), `name` (nama perjalanan pembelajaran), `difficulty` (tingkat kesulitan), `status_label` (status pembelajaran seperti 'completed', 'in_progress', atau 'not_started'), dan stempel waktu (`first_opened_at` dan `completed_at`) untuk kapan perjalanan pembelajaran pertama kali dibuka dan diselesaikan.
+
+*   **`average_learning_history.csv`**: File ini menyimpan ringkasan kemajuan pembelajaran, yang dikelompokkan berdasarkan `developer_id`. Ini menampilkan jumlah perjalanan yang telah 'completed' (selesai), 'in_progress' (sedang berlangsung), dan 'not_started' (belum dimulai), bersama dengan total jumlah perjalanan untuk setiap pengembang (`total_journeys`).

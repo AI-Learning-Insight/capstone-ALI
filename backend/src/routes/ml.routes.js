@@ -75,17 +75,17 @@ const mlRoutes = [
         return !!r;
       };
 
-      // normalisasi 'hari terakhir aktif' → hari
+      // normalisasi 'hari terakhir aktif' -> hari
       const toDays = (v) => {
         const n = Number(v);
         if (!Number.isFinite(n) || n < 0) return null;
 
         // asumsi:
-        // -  > 3650 && < 100000  => menit (± > ~2.5 hari, < ~69 hari)
+        // -  > 3650 && < 100000  => menit (+/- > ~2.5 hari, < ~69 hari)
         // -  >= 100000           => detik
         // -  lainnya              => sudah dalam hari
-        if (n > 3650 && n < 100000) return Math.round(n / 1440); // menit → hari
-        if (n >= 100000) return Math.round(n / 86400); // detik → hari
+        if (n > 3650 && n < 100000) return Math.round(n / 1440); // menit -> hari
+        if (n >= 100000) return Math.round(n / 86400); // detik -> hari
         return Math.round(n); // sudah satuan hari
       };
 

@@ -5,8 +5,8 @@ import { RouterProvider } from 'react-router-dom';
 import router from './router';
 import './styles/tailwind.css';
 import { AuthProvider } from './lib/auth-context.jsx';
-import { ThemeProvider } from './lib/theme-context.jsx'; // ⬅️ TAMBAHKAN INI
-import { Toaster } from 'sonner'; // ⬅️ pasang di root, satu kali
+import { ThemeProvider } from './lib/theme-context.jsx';
+import { Toaster } from 'sonner';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

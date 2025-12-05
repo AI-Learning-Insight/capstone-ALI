@@ -54,7 +54,7 @@ async function fetchRecipients() {
   return rows;
 }
 
-const SUBJECT = 'Saatnya Naik Level! Ayo Selesaikan Modulmu 🔥';
+const SUBJECT = 'Saatnya Naik Level! Ayo Selesaikan Modulmu';
 
 function buildBody(name, learnerType) {
   const safeName = name || 'teman';
@@ -65,7 +65,7 @@ function buildBody(name, learnerType) {
     'Kamu bisa naik level lebih cepat dengan melanjutkan dan menyelesaikan modul-modul yang tersedia.',
     'Ayo lanjutkan belajarmu hari ini dan tingkatkan progresmu!',
     `Klik modul yang belum selesai di sini: ${DASHBOARD_URL}`,
-    'Semangat terus — setiap langkah kecil membawa kamu lebih dekat ke level berikutnya! 💪',
+    'Semangat terus - setiap langkah kecil membawa kamu lebih dekat ke level berikutnya!',
   ].join('\n');
 }
 

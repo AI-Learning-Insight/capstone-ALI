@@ -1,0 +1,27 @@
+# Dependencies
+node_modules
+backend/node_modules
+frontend/node_modules
+
+# Build output
+frontend/dist
+backend/dist
+
+# Runtime/upload artifacts
+backend/uploads
+
+# Env & secrets
+.env
+.env.*
+!.env.example
+backend/.env
+frontend/.env
+
+# OS/editor noise
+*.DS_Store
+Thumbs.db
+.idea
+.vscode/*
+
+# Temp/snippets
+temp_snip.txt

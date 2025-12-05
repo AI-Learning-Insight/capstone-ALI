@@ -1,0 +1,22 @@
+Semua folder sudah diberi angka, berati itu urutan membuatnya.
+Setiap folder ada penjelasannya buat apa aja data itu digunakan.
+
+Deskripsi Singkat Folder:
+Dataset Used:
+Data yang akan digunakan pada proses Cleaning.
+
+Cleaning Dataset:
+Data yang sudah dibersihkan dan siap untuk merging data (bisa untuk database awal dashboard)
+
+Merging Dataset Cleaning:
+Data yang berisi hasil penggabungan dataset pada folder Cleaning Dataset. Bisa digunakan untuk dashboard dan Modeling.
+
+Modeling:
+Berisi hasil clustering dan Klasifikasi yang menghasilkan 3 karakter kategori siswa. Selain itu dibuatkan juga file modeling dengan format .pkl, digunakan jika ingin membuat automatisasi Ketika ada user baru maka hasil kategori akan keluar.
+
+(Tambahan)History Belajar User:
+Data yang digunakan untuk menampilkan deskripsi modul apa saja yang dikerjakan oleh User 
+
+(Tambahan) Script Automation:
+Jika ingin training secara otomatis Ketika ada record baru, maka gunakan ini. Mungkin untuk update kedepannya, soalnya untuk capstone hanya diberi Waktu 1 bulan.
+======================== Salam Interaksi Bun ======================

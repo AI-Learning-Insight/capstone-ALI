@@ -6,7 +6,7 @@ export default [
   {
     method: 'GET',
     path: '/me',
-    options: { auth: 'jwt' },      // ⬅️ ganti 'jwt' kalau di server.js namanya beda
+    options: { auth: 'jwt' },      // -> ganti 'jwt' kalau di server.js namanya beda
     handler: me,
   },
   {
@@ -27,7 +27,7 @@ export default [
     method: 'POST',
     path: '/me/avatar',
     options: {
-      auth: 'jwt',                 // ⬅️ sama persis dengan GET /me
+      auth: 'jwt',                 // -> sama persis dengan GET /me
       payload: {
         parse: true,
         output: 'stream',

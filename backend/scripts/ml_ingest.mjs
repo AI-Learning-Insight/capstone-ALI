@@ -25,8 +25,18 @@ async function ensureFinalDatasetTable() {
       t.decimal('avg_completion_rating');
       t.decimal('avg_exam_score');
       t.decimal('exam_pass_rate');
+      t.integer('days_since_last_active');
     });
   } else {
+    const hasCol = await db.schema.hasColumn(
+      'ml_final_dataset',
+      'days_since_last_active'
+    );
+    if (!hasCol) {
+      await db.schema.alterTable('ml_final_dataset', (t) => {
+        t.integer('days_since_last_active');
+      });
+    }
     await db('ml_final_dataset').truncate();
   }
 }
@@ -56,7 +66,7 @@ async function rebuildFeaturesViewFromFinal() {
       NULL::timestamp                         AS last_exam_activity,
       NULL::timestamp                         AS last_track_activity,
       NULL::timestamp                         AS last_activity_at,
-      NULL::double precision                  AS days_since_last_activity
+      coalesce(fd.days_since_last_active, 0)::double precision AS days_since_last_activity
     FROM ml_final_dataset fd;
   `);
   await db.raw(
@@ -235,6 +245,64 @@ async function ingestCSV(file, table, mapRow, options = {}) {
 
 // ----------------- MAIN -----------------
 
+// Resolusi fleksibel untuk variasi nama/struktur folder dataset
+const FILE_CANDIDATES = {
+  // Agregat final untuk materialized view
+  'final_dataset.csv': [
+    'final_dataset.csv',
+    path.join('[3] Merging Dataset Cleaning', 'final_dataset.csv'),
+    path.join('data', 'data_ml', 'final_dataset.csv'),
+  ],
+  // Katalog journey
+  'developer_journeys.csv': [
+    'developer_journeys.csv',
+    path.join('[1] Dataset Used', 'developer_journeys.csv'),
+    path.join('data', 'data_ml', 'developer_journeys.csv'),
+  ],
+  // Users & event-level data (nama lama vs baru)
+  'users_clean.csv': [
+    'users_clean.csv',
+    path.join('[2] Cleaning Dataset', 'clean_users.csv'),
+    path.join('data', 'data_ml', 'users_clean.csv'),
+  ],
+  'complete_clean.csv': [
+    'complete_clean.csv',
+    path.join('[2] Cleaning Dataset', 'clean_completions.csv'),
+    path.join('data', 'data_ml', 'complete_clean.csv'),
+  ],
+  'registration_clean.csv': [
+    'registration_clean.csv',
+    path.join('[2] Cleaning Dataset', 'clean_exam_registrations.csv'),
+    path.join('data', 'data_ml', 'registration_clean.csv'),
+  ],
+  'exam_clean.csv': [
+    'exam_clean.csv',
+    path.join('[2] Cleaning Dataset', 'clean_exam_results.csv'),
+    path.join('data', 'data_ml', 'exam_clean.csv'),
+  ],
+  'submission_clean.csv': [
+    'submission_clean.csv',
+    path.join('[2] Cleaning Dataset', 'clean_submissions.csv'),
+    path.join('data', 'data_ml', 'submission_clean.csv'),
+  ],
+  'tracking_clean.csv': [
+    'tracking_clean.csv',
+    path.join('[2] Cleaning Dataset', 'clean_tracking.csv'),
+    path.join('data', 'data_ml', 'tracking_clean.csv'),
+  ],
+};
+
+function resolveFile(baseDir, key) {
+  const candidates = FILE_CANDIDATES[key] || [key];
+  for (const rel of candidates) {
+    const full = path.isAbsolute(rel) ? rel : path.join(baseDir, rel);
+    if (fs.existsSync(full)) return full;
+  }
+  throw new Error(
+    `File ${key} not found under ${baseDir}. Tried: ${candidates.join(', ')}`
+  );
+}
+
 async function main() {
   const base = process.argv[2];
   if (!base) {
@@ -256,7 +324,7 @@ async function main() {
   };
 
   // Helper path ke data_ml
-  const p = (f) => path.join(base, f);
+  const p = (key) => resolveFile(base, key);
 
   // ---- final_dataset.csv -> ml_final_dataset (agregat) ----
   await ingestCSV(
@@ -276,6 +344,7 @@ async function main() {
       avg_completion_rating: toFloat(r.avg_completion_rating),
       avg_exam_score: toFloat(r.avg_exam_score),
       exam_pass_rate: toFloat(r.exam_pass_rate),
+      days_since_last_active: toInt(r.days_since_last_active),
     }),
     { upsertKey: 'user_id' }
   );
@@ -534,21 +603,29 @@ async function main() {
   try {
     // "base" = path ke data_ml
     const candidates = [
-      // ../.. dari data_ml -> Capstone_v2/modeling/clustered_learners.csv
+      // layout lama: ../.. dari data_ml -> Capstone_v2/modeling/clustered_learners.csv
       path.join(base, '..', '..', 'modeling', 'clustered_learners.csv'),
-      // ../ dari data_ml -> data/modeling/clustered_learners.csv (jika modeling diletakkan di dalam /data)
+      // layout lama: ../ dari data_ml -> data/modeling/clustered_learners.csv
       path.join(base, '..', 'modeling', 'clustered_learners.csv'),
+      // layout baru: dalam root Dataset-Dan-Model-main/[4] Modeling(/Clustering)
+      path.join(base, '[4] Modeling', 'clustered_learners.csv'),
+      path.join(base, '[4] Modeling', 'Clustering', 'clustered_learners.csv'),
       // same dir fallback
       path.join(base, 'clustered_learners.csv'),
     ];
 
     const clusterCsv = candidates.find((p) => fs.existsSync(p));
+
+    // Fallback: df_dashboard.csv (punya kolom learner_type)
+    const dashCandidates = [
+      path.join(base, '[4] Modeling', 'df_dashboard.csv'),
+      path.join(base, '[4] Modeling', 'Clustering', 'df_dashboard.csv'),
+      path.join(base, 'df_dashboard.csv'),
+    ];
+    const dashCsv = dashCandidates.find((p) => fs.existsSync(p));
+
     if (clusterCsv) {
-      console.log(
-        '\nImporting',
-        path.relative(process.cwd(), clusterCsv),
-        '→ ml_learner_cluster'
-      );
+      console.log('\nImporting', path.relative(process.cwd(), clusterCsv), '-> ml_learner_cluster');
       await ingestCSV(
         clusterCsv,
         'ml_learner_cluster',
@@ -573,13 +650,36 @@ async function main() {
         }),
         { upsertKey: 'developer_id' }
       );
+    } else if (dashCsv) {
+      console.log('\nImporting', path.relative(process.cwd(), dashCsv), '-> ml_learner_cluster (from df_dashboard)');
+      await ingestCSV(
+        dashCsv,
+        'ml_learner_cluster',
+        (r) => ({
+          developer_id: toInt(r.user_id),
+          learner_type: r.learner_type || null,
+          fast_learner_flag:
+            typeof r.learner_type === 'string' &&
+            r.learner_type.toLowerCase().includes('fast'),
+          reflective_learner_flag:
+            typeof r.learner_type === 'string' &&
+            r.learner_type.toLowerCase().includes('reflective'),
+          cluster: null,
+          materials_completed: toInt(r.total_completed_modules),
+          active_days: null,
+          avg_rating: toFloat(r.avg_submission_rating),
+          avg_score: toFloat(r.avg_exam_score),
+          consistency_score: null,
+          study_duration_total: toFloat(r.avg_study_duration),
+        }),
+        { upsertKey: 'developer_id' }
+      );
     } else {
-      console.log('\n[skip] clustered_learners.csv not found in expected locations');
+      console.log('\n[skip] clustered_learners.csv/df_dashboard.csv not found in expected locations');
     }
   } catch (e) {
     console.warn('\n[warn] clustered_learners import failed:', e.message);
   }
-
   // refresh materialized view
   await rebuildFeaturesViewFromFinal();
   await db.raw('REFRESH MATERIALIZED VIEW CONCURRENTLY ml_user_features;');

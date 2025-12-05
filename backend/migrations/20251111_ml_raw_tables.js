@@ -9,7 +9,7 @@ export async function up(knex) {
     t.integer('user_role');
     t.integer('user_verification_status');
     t.timestamp('created_at', { useTz: true });
-    t.string('updated_at'); // sumber data kadang "Oct 8, 2025, 13:17" → simpan mentah
+    t.string('updated_at'); // sumber data kadang "Oct 8, 2025, 13:17" -> simpan mentah
     t.integer('city_id');
   });
 

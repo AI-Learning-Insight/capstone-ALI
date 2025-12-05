@@ -1,6 +1,6 @@
 /* frontend/tailwind.config.js */
 export default {
-  darkMode: 'class', // ⬅️ AKTIFKAN DARK MODE BERBASIS CLASS
+  darkMode: 'class', // -> AKTIFKAN DARK MODE BERBASIS CLASS
   content: [
     './index.html',
     './src/**/*.{js,jsx,ts,tsx}',

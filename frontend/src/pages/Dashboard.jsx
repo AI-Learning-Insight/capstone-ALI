@@ -55,7 +55,7 @@ const STYLE_HINTS = {
   FAST: {
     title: "Style: Fast",
     body:
-      "Kamu cenderung belajar dalam sprint singkat namun intens. Tips: sisipkan jeda istirahat (5–10 menit) dan sesi review mingguan agar materi tidak cepat lupa.",
+      "Kamu cenderung belajar dalam sprint singkat namun intens. Tips: sisipkan jeda istirahat (5-10 menit) dan sesi review mingguan agar materi tidak cepat lupa.",
   },
   REFLECTIVE: {
     title: "Style: Reflective",
@@ -82,21 +82,26 @@ const PASS_RATE_HINTS = {
   },
 };
 
-const DROPOUT_HINTS = {
-  LOW: {
-    title: "Dropout Risk Rendah",
+const LAST_ACTIVE_HINTS = {
+  RECENT: {
+    title: "Aktif (0-3 hari)",
     body:
-      "Risiko berhenti program rendah. Tetap jaga ritme belajar dan jangan menunda tugas. Tips: pasang target mingguan kecil (misal 2 modul selesai).",
+      "Kamu baru saja aktif. Pertahankan ritme dengan sesi singkat 20-30 menit tiap hari supaya konsisten.",
   },
-  MEDIUM: {
-    title: "Dropout Risk Sedang",
+  WEEK: {
+    title: "Aktif pekan ini",
     body:
-      "Aktivitas belajar mulai naik-turun. Tips: pilih waktu belajar yang realistis, kurangi distraksi (game/medsos saat belajar), dan gunakan to-do list di dashboard.",
+      "Terakhir aktif kurang dari 7 hari. Jadwalkan satu sesi hari ini (10-20 menit) agar momentum tetap terjaga.",
   },
-  HIGH: {
-    title: "Dropout Risk Tinggi",
+  MID: {
+    title: "Sudah lebih dari seminggu",
     body:
-      "Aktivitas belajarmu menurun cukup jauh. Tips: segera hubungi mentor, buat rencana belajar sederhana 1 minggu ke depan, dan mulai dari tugas yang paling mudah dulu agar momentum kembali.",
+      "Aktivitas terakhir 7-14 hari lalu. Tips: buka kembali modul ringan, catat 3 poin utama, lalu targetkan 1 tugas selesai minggu ini.",
+  },
+  LONG: {
+    title: "Lama tidak aktif",
+    body:
+      "Lebih dari 14 hari belum ada aktivitas. Mulai dari tugas paling mudah untuk memecah kebuntuan, pasang pengingat harian, dan minta bantuan mentor jika perlu.",
   },
 };
 
@@ -154,7 +159,7 @@ const MOCK = {
       icon: Clock3,
       label: "Jam Minggu Ini",
       value: "23",
-      helper: "Target ≥ 25 Jam",
+      helper: "Target >= 25 Jam",
       tone: "green",
     },
     {
@@ -248,7 +253,7 @@ const MOCK = {
   ],
 };
 
-// 🔹 Dummy progress khusus cohort ML
+// * Dummy progress khusus cohort ML
 const ML_DUMMY_PROGRESS = [
   {
     label: "Pengantar Machine Learning",
@@ -531,7 +536,7 @@ export default function Dashboard() {
       styleCode = learnerTypeCode;
     }
 
-    // Pass rate (0–1) → %
+    // Pass rate (0-1) -> %
     const passRaw = feat.pass_rate;
     const passPct =
       passRaw != null ? Math.round(Number(passRaw) * 100) : null;
@@ -551,28 +556,38 @@ export default function Dashboard() {
       else passLevel = "LOW";
     }
 
-    // Dropout risk (0–1) → %
-    const dropoutRaw = feat.dropout_risk;
-    const dropoutPct =
-      dropoutRaw != null ? Math.round(Number(dropoutRaw) * 100) : null;
+    // Last active (hari sejak aktivitas terakhir)
+    const lastActiveRaw = feat.days_since_last_activity;
+    const lastActiveDays =
+      lastActiveRaw != null
+        ? Math.max(0, Math.round(Number(lastActiveRaw)))
+        : null;
 
-    let dropoutTone = "indigo";
-    let dropoutHelper = "Perkiraan risiko berhenti";
-    let dropoutCode = null;
+    let lastActiveTone = "indigo";
+    let lastActiveHelper = "Hari sejak aktivitas terakhir";
+    let lastActiveCode = null;
 
-    if (dropoutPct != null) {
-      if (dropoutPct < 35) {
-        dropoutTone = "green";
-        dropoutHelper = "Low risk (aman)";
-        dropoutCode = "LOW";
-      } else if (dropoutPct < 70) {
-        dropoutTone = "orange";
-        dropoutHelper = "Medium risk (perlu dijaga)";
-        dropoutCode = "MEDIUM";
+    if (lastActiveDays != null) {
+      if (lastActiveDays <= 1) {
+        lastActiveTone = "green";
+        lastActiveHelper = "Aktif hari ini/kemarin";
+        lastActiveCode = "RECENT";
+      } else if (lastActiveDays <= 3) {
+        lastActiveTone = "green";
+        lastActiveHelper = "Aktif 2-3 hari lalu";
+        lastActiveCode = "RECENT";
+      } else if (lastActiveDays <= 7) {
+        lastActiveTone = "indigo";
+        lastActiveHelper = "Aktif pekan ini";
+        lastActiveCode = "WEEK";
+      } else if (lastActiveDays <= 14) {
+        lastActiveTone = "orange";
+        lastActiveHelper = "Sudah lebih dari seminggu";
+        lastActiveCode = "MID";
       } else {
-        dropoutTone = "orange";
-        dropoutHelper = "Medium–High risk (perlu dijaga)";
-        dropoutCode = "HIGH";
+        lastActiveTone = "orange";
+        lastActiveHelper = "Perlu kembali belajar";
+        lastActiveCode = "LONG";
       }
     }
 
@@ -580,8 +595,8 @@ export default function Dashboard() {
       learnerTypeCode ? LEARNER_TYPE_HINTS[learnerTypeCode] : undefined;
     const styleHint = styleCode ? STYLE_HINTS[styleCode] : undefined;
     const passHint = passLevel ? PASS_RATE_HINTS[passLevel] : undefined;
-    const dropoutHint =
-      dropoutCode ? DROPOUT_HINTS[dropoutCode] : undefined;
+    const lastActiveHint =
+      lastActiveCode ? LAST_ACTIVE_HINTS[lastActiveCode] : undefined;
 
     return [
       {
@@ -609,14 +624,58 @@ export default function Dashboard() {
         hint: passHint,
       },
       {
-        icon: AlertCircle,
-        label: "Dropout Risk",
-        value: dropoutPct != null ? `${dropoutPct}%` : "-",
-        helper: dropoutHelper,
-        tone: dropoutTone,
-        hint: dropoutHint,
+        icon: CalendarClock,
+        label: "Last Day Active",
+        value: lastActiveDays != null ? `${lastActiveDays} hari` : "-",
+        helper: lastActiveHelper,
+        tone: lastActiveTone,
+        hint: lastActiveHint,
       },
     ];
+  }, [insights]);
+
+  // Coach banner copy berdasarkan learner type
+  const coachBanner = useMemo(() => {
+    const feat = insights || {};
+    const styleRaw = feat.style || "";
+    const learnerTypeText =
+      feat.learner_type_text ||
+      (styleRaw === "fast"
+        ? "Fast Learner"
+        : styleRaw === "reflective"
+        ? "Reflective Learner"
+        : styleRaw
+        ? "Consistent Learner"
+        : "Learner");
+
+    let learnerTypeCode = feat.learner_type_code;
+    if (!learnerTypeCode) {
+      if (styleRaw) {
+        learnerTypeCode = styleRaw.toUpperCase();
+      } else if (learnerTypeText) {
+        const upper = learnerTypeText.toUpperCase();
+        if (upper.includes("FAST")) learnerTypeCode = "FAST";
+        else if (upper.includes("REFLECTIVE")) learnerTypeCode = "REFLECTIVE";
+        else if (upper.includes("CONSISTENT")) learnerTypeCode = "CONSISTENT";
+      }
+    }
+
+    let title = `Kamu adalah ${learnerTypeText}!`;
+    let body =
+      "Berdasarkan pola belajarmu, tetap jaga ritme belajar yang nyaman dan lanjutkan progres secara konsisten.";
+
+    if (learnerTypeCode === "FAST") {
+      body =
+        "Kamu bergerak cepat menyelesaikan materi. Tambahkan sesi review 10-15 menit setelah belajar dan gunakan catatan singkat agar pemahaman makin kuat.";
+    } else if (learnerTypeCode === "REFLECTIVE") {
+      body =
+        "Kamu suka mencerna materi dengan tenang. Fokus pada satu topik per sesi, tulis 3 poin utama, lalu jadwalkan latihan singkat keesokan harinya.";
+    } else if (learnerTypeCode === "CONSISTENT") {
+      body =
+        "Kamu menjaga ritme stabil. Pertahankan target harian atau mingguan (misal 2-3 modul) dan hindari menumpuk tugas di akhir.";
+    }
+
+    return { title, body };
   }, [insights]);
 
   if (!ready || dashLoading) return <div className="p-6">Loading...</div>;
@@ -727,15 +786,8 @@ export default function Dashboard() {
                   <div className="flex items-start gap-3">
                     <AlertCircle className="w-5 h-5" />
                     <div>
-                      <h4 className="font-semibold">
-                        Kamu adalah Consistent Learner!
-                      </h4>
-                      <p className="mt-1 text-white/90">
-                        Berdasarkan pola belajarmu, kamu menyelesaikan materi
-                        dengan konsisten setiap hari. Rata-rata kamu belajar 2–3
-                        materi per hari dengan fokus 45 menit per materi. Pola
-                        belajar yang sangat baik untuk hasil jangka panjang!
-                      </p>
+                      <h4 className="font-semibold">{coachBanner.title}</h4>
+                      <p className="mt-1 text-white/90">{coachBanner.body}</p>
                     </div>
                   </div>
                 </div>
@@ -913,7 +965,7 @@ export default function Dashboard() {
                               {t.title}
                             </p>
                             <p className="text-sm text-slate-500 dark:text-slate-300">
-                              {t.subject || "Modul"} • {dueLabel}
+                              {t.subject || "Modul"} - {dueLabel}
                             </p>
                           </div>
 

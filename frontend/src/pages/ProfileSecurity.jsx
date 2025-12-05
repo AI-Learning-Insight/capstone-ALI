@@ -8,7 +8,7 @@ import {
 import Card from "../components/ui/Card";
 import { useAuth } from "../lib/auth-context";
 import api, { publicUrl } from "../lib/api";
-import { notify } from "../lib/notify"; // ⬅️ Sonner helper
+import { notify } from "../lib/notify"; // -> Sonner helper
 import { formatMenteeCode } from "../lib/student-code";
 
 function Field({ label, icon, children, error }) {
@@ -30,8 +30,8 @@ export default function ProfileSecurity() {
   const { user, ready } = useAuth();
 
   const profile = {
-    name: user?.name ?? "—",
-    email: user?.email ?? "—",
+    name: user?.name ?? "-",
+    email: user?.email ?? "-",
     role: user?.role === "student" ? "Siswa" : (user?.role ?? "Siswa"),
     studentCode: formatMenteeCode(user),
     avatar: user?.avatar_url
@@ -67,7 +67,7 @@ export default function ProfileSecurity() {
           password_new: form.next,
         }),
         {
-          loading: "Memperbarui password…",
+          loading: "Memperbarui password...",
           success: "Password berhasil diperbarui ",
           error: (error) =>
             error?.response?.data?.message || "Gagal update password",

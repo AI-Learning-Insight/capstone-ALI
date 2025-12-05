@@ -22,31 +22,69 @@ async function getTrackModulesProgress(studentId) {
     .first();
 
   const track = cls?.class_track;
-  if (!track) {
-    return [];
-  }
 
   // 3) Ambil daftar modul di track tsb dari ml_complete + ml_journeys
-  const rows = await db('ml_complete as c')
-    .join('ml_journeys as j', 'j.id', 'c.journey_id')
-    .select(
-      'c.journey_id',
-      'j.name',
-      'j.class_track',
-      'c.study_duration',
-      'j.hours_to_study'
-    )
-    .where('c.user_id', mlUserId)
-    .andWhere('j.class_track', track)
-    .orderBy('c.study_duration', 'desc')
-    .limit(4);
+  let rows = [];
+  if (track) {
+    rows = await db('ml_complete as c')
+      .join('ml_journeys as j', 'j.id', 'c.journey_id')
+      .select(
+        'c.journey_id',
+        'j.name',
+        'j.class_track',
+        'c.study_duration',
+        'j.hours_to_study'
+      )
+      .where('c.user_id', mlUserId)
+      .andWhere('j.class_track', track)
+      .orderBy('c.study_duration', 'desc')
+      .limit(4);
+  }
+
+  // Fallback: jika belum ada catatan completion, gunakan tracking (aktivitas tutorial)
+  if (!rows.length) {
+    const trackingRows = await db('ml_tracking as t')
+      .join('ml_journeys as j', 'j.id', 't.journey_id')
+      .select(
+        't.journey_id',
+        'j.name',
+        'j.class_track',
+        'j.class_prefix',
+        'j.hours_to_study',
+        db.raw('COUNT(*)::int as total_events'),
+        db.raw(
+          "SUM(CASE WHEN t.completed_at IS NOT NULL THEN 1 ELSE 0 END)::int as completed_events"
+        )
+      )
+      .where('t.developer_id', mlUserId)
+      .groupBy('t.journey_id', 'j.name', 'j.class_track', 'j.class_prefix', 'j.hours_to_study')
+      .orderBy('total_events', 'desc')
+      .limit(4);
+
+    rows = trackingRows.map((r) => {
+      const total = r.total_events ?? 0;
+      const done = r.completed_events ?? 0;
+      const percent =
+        total > 0 ? Math.max(0, Math.min(100, Math.round((done / total) * 100))) : 0;
+
+      return {
+        journey_id: r.journey_id,
+        name: r.name,
+        class_track: r.class_track,
+        class_prefix: r.class_prefix,
+        study_duration: null,
+        hours_to_study: r.hours_to_study ?? null,
+        progress_percent: percent,
+      };
+    });
+  }
 
   return rows.map((r) => {
-    const duration = r.study_duration ?? 0;   // jam belajar aktual
-    const target = r.hours_to_study ?? 0;     // estimasi jam yang disarankan
+    const duration = r.study_duration ?? 0; // jam belajar aktual
+    const target = r.hours_to_study ?? 0; // estimasi jam yang disarankan
 
-    let percent = 0;
-    if (target > 0) {
+    let percent = r.progress_percent ?? 0;
+    if (percent === 0 && target > 0) {
       percent = Math.round((duration / target) * 100);
       if (!Number.isFinite(percent)) percent = 0;
       if (percent > 100) percent = 100;
@@ -56,10 +94,10 @@ async function getTrackModulesProgress(studentId) {
     return {
       journey_id: r.journey_id,
       name: r.name,
-      class_track: r.class_track,      // ANDROID / WEB / CLOUD
-      study_duration: duration,        // jam belajar
-      hours_to_study: target,          // jam target
-      progress_percent: percent,       // 0–100
+      class_track: r.class_track, // ANDROID / WEB / CLOUD
+      study_duration: r.study_duration, // jam belajar (bisa null)
+      hours_to_study: target || null, // jam target
+      progress_percent: percent, // 0-100 (bisa 0 jika belum ada completion)
     };
   });
 }
@@ -98,7 +136,7 @@ export const overview = async (request, h) => {
     title: 'Kamu adalah Consistent Learner!',
     body:
       'Berdasarkan pola belajarmu, kamu menyelesaikan materi dengan konsisten setiap hari. ' +
-      'Rata-rata kamu belajar 2–3 materi per hari dengan fokus sekitar 45 menit per materi. ' +
+      'Rata-rata kamu belajar 2-3 materi per hari dengan fokus sekitar 45 menit per materi. ' +
       'Pola belajar yang sangat baik untuk hasil jangka panjang!',
   };
 
@@ -111,7 +149,7 @@ export const overview = async (request, h) => {
       todos,
       recommendations: recs,
       materials: progressMaterials,
-      // ⬇️ inilah yang akan dipakai FE
+      // down inilah yang akan dipakai FE
       modules_progress: modules,
     },
   });
