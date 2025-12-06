@@ -4,14 +4,14 @@ FROM node:20-alpine
 # Direktori kerja di dalam container
 WORKDIR /usr/src/app
 
-# Copy dulu file package untuk caching layer npm install
-COPY package*.json ./
+# Copy file package dari folder backend (build context dianggap dari repo root)
+COPY backend/package*.json ./
 
 # Install dependencies (devDependencies tetap disertakan agar perintah migrasi/knex tersedia)
 RUN npm ci
 
 # Copy semua source code backend
-COPY . .
+COPY backend/. .
 
 # Mode default produksi; override di docker-compose bila perlu
 ENV NODE_ENV=production
