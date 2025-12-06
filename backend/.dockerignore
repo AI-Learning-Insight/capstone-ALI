@@ -5,4 +5,6 @@ docker-compose.yml
 .git
 .gitignore
 .env
+# Heavy local dataset, tidak perlu ikut image/container
+ml/source/Dataset-Dan-Model-main/**
 ml/source/Project_struktur/**

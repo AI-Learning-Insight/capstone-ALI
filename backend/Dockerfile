@@ -7,15 +7,17 @@ WORKDIR /usr/src/app
 # Copy dulu file package untuk caching layer npm install
 COPY package*.json ./
 
-# Install dependencies (termasuk devDependencies, karena kita butuh knex CLI)
-RUN npm install
+# Install dependencies (devDependencies tetap disertakan agar perintah migrasi/knex tersedia)
+RUN npm ci
 
 # Copy semua source code backend
 COPY . .
 
+# Mode default produksi; override di docker-compose bila perlu
+ENV NODE_ENV=production
+
 # Expose port Hapi (diambil dari env PORT, default 8080)
 EXPOSE 8080
 
-# Command default (untuk development)
-# Jalankan migrasi lalu start server (seeding opsional dijalankan manual jika perlu)
-CMD ["sh", "-c", "npm run migrate:latest && npm run dev"]
+# Command default: jalankan server (migrasi dijalankan via postdeploy/job)
+CMD ["npm", "start"]
