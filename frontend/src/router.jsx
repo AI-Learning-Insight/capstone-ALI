@@ -4,7 +4,6 @@ import App from "./App";
 
 // Public pages
 import Login from "./pages/Login";
-import Register from "./pages/Register";
 
 // Private pages (butuh login)
 import Dashboard from "./pages/Dashboard";          // = StudentDashboard
@@ -13,6 +12,7 @@ import ProfileInfo from "./pages/ProfileInfo";
 import ProfileSecurity from "./pages/ProfileSecurity";
 import Todos from "./pages/Todos";
 import Assessment from "./pages/Assessment";
+import MentorProfile from "./pages/MentorProfile";
 
 // Auth/role
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -42,7 +42,6 @@ export default createBrowserRouter([
 
       // Public
       { path: "login", element: <Login /> },
-      { path: "register", element: <Register /> },
 
       // Private (butuh login saja)
       {
@@ -74,6 +73,14 @@ export default createBrowserRouter([
         element: (
           <ProtectedRoute roles={["mentor", "admin"]}>
             <MentorDashboard />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "mentor/profile",
+        element: (
+          <ProtectedRoute roles={["mentor", "admin"]}>
+            <MentorProfile />
           </ProtectedRoute>
         ),
       },

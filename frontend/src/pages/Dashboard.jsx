@@ -111,32 +111,32 @@ const LEARNING_INSIGHT_HINTS = {
   examsTaken: {
     title: "Exams Taken",
     body:
-      "Apa ini: jumlah ujian atau kuis yang sudah kamu ikuti. Cara tingkatkan: coba semua latihan yang tersedia dan ulangi topik yang jarang dikerjakan.",
+      "Jumlah ujian atau kuis yang sudah kamu ikuti. Cara tingkatkan: coba semua latihan yang tersedia dan ulangi topik yang jarang dikerjakan.",
   },
   avgExamScore: {
     title: "Avg Exam Score",
     body:
-      "Apa ini: rata-rata nilai ujianmu. Cara tingkatkan: review soal dengan nilai rendah, catat pola kesalahan, lalu latihan ulang topik tersebut.",
+      "Rata-rata nilai ujianmu. Cara tingkatkan: review soal dengan nilai rendah, catat pola kesalahan, lalu latihan ulang topik tersebut.",
   },
   studyMinutes: {
     title: "Study Minutes",
     body:
-      "Apa ini: total menit belajar yang tercatat. Cara tingkatkan: jadwalkan sesi 30-45 menit, 3-4 kali seminggu dan catat progresnya.",
+      "Total menit belajar yang tercatat. Cara tingkatkan: jadwalkan sesi 30-45 menit, 3-4 kali seminggu dan catat progresnya.",
   },
   avgSubmissionRating: {
     title: "Avg Submission Rating",
     body:
-      "Apa ini: rata-rata penilaian tugas yang kamu submit. Cara tingkatkan: baca instruksi dengan teliti, cek ulang sebelum submit, dan terapkan feedback mentor.",
+      "Rata-rata penilaian tugas yang kamu submit. Cara tingkatkan: baca instruksi dengan teliti, cek ulang sebelum submit, dan terapkan feedback mentor.",
   },
   tutorialsCompleted: {
     title: "Tutorials Completed",
     body:
-      "Apa ini: jumlah materi atau tutorial yang sudah selesai. Cara tingkatkan: buat target mingguan 2-3 modul dan selesaikan sedikit demi sedikit.",
+      "Jumlah materi atau tutorial yang sudah selesai. Cara tingkatkan: buat target mingguan 2-3 modul dan selesaikan sedikit demi sedikit.",
   },
   lastActivityDays: {
     title: "Last Activity (days)",
     body:
-      "Apa ini: berapa hari sejak aktivitas terakhir. Cara tingkatkan: jika angkanya tinggi, login kembali hari ini dan mulai dari tugas paling mudah agar ritme kembali.",
+      "Berapa hari sejak aktivitas terakhir. Cara tingkatkan: jika angkanya tinggi, login kembali hari ini dan mulai dari tugas paling mudah agar ritme kembali.",
   },
 };
 
@@ -292,6 +292,7 @@ export default function Dashboard() {
   const [todoForm, setTodoForm] = useState({
     journey_id: "",
     due_date: "",
+    description: "",
   });
   const [addingTodo, setAddingTodo] = useState(false);
 
@@ -417,10 +418,11 @@ export default function Dashboard() {
       await api.post("/todos", {
         title,
         subject,
+        description: todoForm.description || null,
         due_date: todoForm.due_date || null,
       });
 
-      setTodoForm({ journey_id: "", due_date: "" });
+      setTodoForm({ journey_id: "", due_date: "", description: "" });
       setAddingTodo(false);
 
       const res = await api.get("/todos");
@@ -899,6 +901,24 @@ export default function Dashboard() {
                           </select>
                         </div>
 
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-1 dark:text-slate-200">
+                            Catatan (opsional)
+                          </label>
+                          <textarea
+                            rows={2}
+                            className="w-full rounded-lg border-slate-200 text-sm dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100"
+                            value={todoForm.description}
+                            onChange={(e) =>
+                              setTodoForm((f) => ({
+                                ...f,
+                                description: e.target.value,
+                              }))
+                            }
+                            placeholder="Isi detail kegiatan atau target spesifik"
+                          />
+                        </div>
+
                         <div className="flex flex-col sm:flex-row gap-3 items-end">
                           <div className="flex-1">
                             <label className="block text-sm font-medium text-slate-700 mb-1 dark:text-slate-200">
@@ -967,6 +987,11 @@ export default function Dashboard() {
                             <p className="text-sm text-slate-500 dark:text-slate-300">
                               {t.subject || "Modul"} - {dueLabel}
                             </p>
+                            {t.description ? (
+                              <p className="text-sm text-slate-500 dark:text-slate-300 mt-1 whitespace-pre-line">
+                                {t.description}
+                              </p>
+                            ) : null}
                           </div>
 
                           <div className="flex flex-col items-end gap-2">

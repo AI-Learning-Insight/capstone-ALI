@@ -2,7 +2,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
-  GraduationCap,
   Menu,
   X,
   LayoutDashboard,
@@ -39,6 +38,7 @@ export default function Navbar() {
   const { theme, toggleTheme } = useTheme(); // AMBIL TEMA & TOGGLE
   const navigate = useNavigate();
   const location = useLocation();
+  const [showLogo, setShowLogo] = useState(true);
 
   // Fallback baca token/user dari localStorage kalau context belum siap
   const tokenLS =
@@ -85,10 +85,19 @@ export default function Navbar() {
           to={isAuth ? dashboardPath : "/"}
           className="flex items-center gap-2"
         >
-          <GraduationCap className="h-6 w-6 text-blue-600" />
-          <span className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-            EdulInsight
-          </span>
+          {showLogo ? (
+            <img
+              src="/logo-edulinsight.png"
+              alt="EdulInsight"
+              className="h-14 w-auto object-contain sm:h-16"
+              loading="lazy"
+              onError={() => setShowLogo(false)}
+            />
+          ) : (
+            <span className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+              EdulInsight
+            </span>
+          )}
         </Link>
 
         {/* Desktop nav */}
@@ -113,8 +122,8 @@ export default function Navbar() {
             )}
           </button>
 
-          <div className="ml-2">
-            {isAuth ? (
+          {isAuth ? (
+            <div className="ml-2">
               <button
                 onClick={handleLogout}
                 className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200 dark:focus:ring-slate-600"
@@ -122,16 +131,8 @@ export default function Navbar() {
                 <LogOut className="h-4 w-4" />
                 Logout
               </button>
-            ) : (
-              <Link
-                to="/login"
-                className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-300"
-              >
-                <LogIn className="h-4 w-4" />
-                Login
-              </Link>
-            )}
-          </div>
+            </div>
+          ) : null}
         </div>
 
         {/* Mobile controls */}
@@ -149,16 +150,6 @@ export default function Navbar() {
               <Moon className="h-4 w-4" />
             )}
           </button>
-
-          {!isAuth && (
-            <Link
-              to="/login"
-              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:border-slate-600 dark:text-slate-100 dark:hover:bg-slate-800 dark:focus:ring-slate-600"
-            >
-              <LogIn className="h-4 w-4" />
-              Login
-            </Link>
-          )}
 
           {isAuth && (
             <button

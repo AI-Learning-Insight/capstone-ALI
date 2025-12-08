@@ -45,11 +45,11 @@ export default function ProfileSecurity() {
 
   function validate() {
     const e = {};
-    if (!form.current) e.current = "Masukkan password saat ini";
-    if (!form.next) e.next = "Password baru wajib diisi";
+    if (!form.current) e.current = "Masukkan kata sandi saat ini";
+    if (!form.next) e.next = "Kata sandi baru wajib diisi";
     if (form.next && form.next.length < 8) e.next = "Minimal 8 karakter";
     if (form.next && form.current && form.next === form.current)
-      e.next = "Password baru tidak boleh sama";
+      e.next = "Kata sandi baru tidak boleh sama";
     if (form.confirm !== form.next) e.confirm = "Konfirmasi tidak sama";
     setErr(e);
     return Object.keys(e).length === 0;
@@ -67,10 +67,10 @@ export default function ProfileSecurity() {
           password_new: form.next,
         }),
         {
-          loading: "Memperbarui password...",
-          success: "Password berhasil diperbarui ",
+          loading: "Memperbarui kata sandi...",
+          success: "Kata sandi berhasil diperbarui ",
           error: (error) =>
-            error?.response?.data?.message || "Gagal update password",
+            error?.response?.data?.message || "Gagal memperbarui kata sandi",
         }
       );
       setForm({ current: "", next: "", confirm: "" });
@@ -153,7 +153,7 @@ export default function ProfileSecurity() {
                 Keamanan
               </h2>
               <p className="text-slate-500 dark:text-slate-300 mb-4">
-                Update password untuk menjaga keamanan akun Anda.
+                Update kata sandi untuk menjaga keamanan akun Anda.
               </p>
 
               <form
@@ -162,7 +162,7 @@ export default function ProfileSecurity() {
               >
                 <div className="md:col-span-2">
                   <Field
-                    label="Password Saat Ini"
+                    label="Kata Sandi Saat Ini"
                     icon={<Lock className="w-4 h-4" />}
                     error={err.current}
                   >
@@ -170,7 +170,7 @@ export default function ProfileSecurity() {
                       type="password"
                       autoComplete="current-password"
                       className="block w-full pl-9 pr-3 py-2 rounded-lg border border-slate-200 bg-white dark:bg-slate-900 dark:border-slate-700 dark:text-slate-50 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      placeholder="Masukkan password saat ini"
+                      placeholder="Masukkan kata sandi saat ini"
                       value={form.current}
                       onChange={(e) =>
                         setForm({ ...form, current: e.target.value })
@@ -180,7 +180,7 @@ export default function ProfileSecurity() {
                 </div>
 
                 <Field
-                  label="Password Baru"
+                  label="Kata Sandi Baru"
                   icon={<Lock className="w-4 h-4" />}
                   error={err.next}
                 >
@@ -197,7 +197,7 @@ export default function ProfileSecurity() {
                 </Field>
 
                 <Field
-                  label="Konfirmasi Password Baru"
+                  label="Konfirmasi Kata Sandi Baru"
                   icon={<Lock className="w-4 h-4" />}
                   error={err.confirm}
                 >
@@ -205,7 +205,7 @@ export default function ProfileSecurity() {
                     type="password"
                     autoComplete="new-password"
                     className="block w-full pl-9 pr-3 py-2 rounded-lg border border-slate-200 bg-white dark:bg-slate-900 dark:border-slate-700 dark:text-slate-50 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    placeholder="Ulangi Password Baru"
+                    placeholder="Ulangi kata sandi baru"
                     value={form.confirm}
                     onChange={(e) =>
                       setForm({ ...form, confirm: e.target.value })

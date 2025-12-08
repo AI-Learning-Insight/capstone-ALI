@@ -26,7 +26,7 @@ export const auth = {
 
     // Public paths helper
     server.ext('onPreAuth', (request, h) => {
-      const publicPaths = ['/health', '/auth/login', '/auth/register'];
+      const publicPaths = ['/health', '/auth/login'];
       if (publicPaths.includes(request.path)) {
         request.auth.mode = 'try';
       }

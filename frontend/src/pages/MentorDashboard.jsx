@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { fetchMentorOverview, fetchMentorMentees } from '../lib/api-mentor';
 import { useAuth } from '../lib/auth-context';
 import { Users2, Smartphone, Zap, AlertTriangle, Search } from 'lucide-react';
@@ -197,7 +198,7 @@ function MenteeRow({ data }) {
   return (
     <div className="w-full rounded-2xl border bg-white hover:shadow transition px-4 py-3
                     border-slate-100 shadow-sm dark:bg-slate-900 dark:border-slate-800">
-      <div className="flex items-center gap-3">
+      <div className="flex items-start gap-3">
         <SmallAvatar name={data.name} email={data.email} src={data.avatar} />
         <div className="flex-1">
           <div className="text-[15px] font-semibold leading-tight">{data.name}</div>
@@ -207,7 +208,7 @@ function MenteeRow({ data }) {
           <Badge style={data.style} />
         </div>
         <button
-          className="ml-3 text-xs font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-50"
+          className="ml-3 text-xs font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-50 self-start mt-0.5"
           onClick={() => setOpen(v => !v)}
         >
           {open ? 'Tutup ^' : 'Lihat ->'}
@@ -361,9 +362,8 @@ export default function MentorDashboard() {
       <div className="px-6 py-5">
         <div className="mb-4 text-center lg:text-left">
           <h1 className="text-xl font-semibold">
-            Welcome, Mentor{' '}
+            Welcome,{' '}
             <span className="text-indigo-600 dark:text-indigo-400">{mentor.name}</span>!{' '}
-            <span>Teacher</span>
           </h1>
         </div>
 
@@ -377,9 +377,12 @@ export default function MentorDashboard() {
                   <div className="text-lg font-bold">{mentor.name}</div>
                   <div className="text-sm text-slate-600 dark:text-slate-400 mt-1">{mentor.email}</div>
                 </div>
-                <button className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-4 py-2">
+                <Link
+                  to="/mentor/profile"
+                  className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-4 py-2"
+                >
                   Edit Profile
-                </button>
+                </Link>
               </div>
             </div>
 

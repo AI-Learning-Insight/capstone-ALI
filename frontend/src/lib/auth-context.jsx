@@ -66,36 +66,6 @@ export function AuthProvider({ children }) {
     return { ...(res.data ?? {}), user: data };
   };
 
-  // REGISTER (kalau dipakai)
-  const register = async (...args) => {
-    let payload;
-    if (typeof args[0] === 'object') payload = args[0];
-    else payload = { name: args[0], email: args[1], password: args[2] };
-
-    const n = String(payload?.name || '').trim();
-    const em = String(payload?.email || '').trim().toLowerCase();
-    const pw = String(payload?.password || '');
-
-    if (!n || !em || !pw) {
-      throw new Error('Nama, email, dan password wajib diisi');
-    }
-
-    const res = await api.post('/auth/register', {
-      name: n,
-      email: em,
-      password: pw,
-      ...(payload?.nisn ? { nisn: payload.nisn } : {}),
-    });
-
-    const token = res.data?.data?.token;
-    if (!token) throw new Error('Token tidak diterima dari server');
-
-    localStorage.setItem('token', token);
-    const data = await refreshUser();
-
-    return { ...(res.data ?? {}), user: data };
-  };
-
   const logout = async () => {
     try {
       // kalau /auth/logout belum ada di backend, tidak masalah
@@ -109,7 +79,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, ready, login, register, logout, refreshUser, setUser }}
+      value={{ user, ready, login, logout, refreshUser, setUser }}
     >
       {children}
     </AuthContext.Provider>

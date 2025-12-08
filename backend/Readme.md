@@ -73,12 +73,10 @@ docker run -d --name ali-pg ^
 6. **Tes dasar**
    ```bash
    curl http://localhost:8080/health
-   curl -X POST http://localhost:8080/auth/register -H "Content-Type: application/json" ^
-     -d "{""name"":""Demo"",""email"":""demo@example.com"",""password"":""Demo@123""}"
    curl -X POST http://localhost:8080/auth/login -H "Content-Type: application/json" ^
-     -d "{""email"":""demo@example.com"",""password"":""Demo@123""}"
+     -d "{""email"":""mentor@example.com"",""password"":""Mentor@123""}"
    ```
-   Simpan token dari response untuk mengakses endpoint terproteksi.
+   Gunakan akun yang sudah disiapkan (contoh: seed mentor) lalu simpan token dari response untuk mengakses endpoint terproteksi.
 
 ## Struktur Folder
 ```
@@ -111,7 +109,6 @@ docs/api-contract.md # dokumentasi API detail (opsional)
 | Method | Path                  | Auth | Deskripsi                                             |
 |--------|-----------------------|------|-------------------------------------------------------|
 | GET    | /health               | -    | Ping                                                  |
-| POST   | /auth/register        | -    | Registrasi                                            |
 | POST   | /auth/login           | -    | Login, menghasilkan JWT                               |
 | GET    | /me                   | JWT  | Profil                                                |
 | PATCH  | /me                   | JWT  | Update profil                                         |

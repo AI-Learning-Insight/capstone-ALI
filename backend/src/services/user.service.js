@@ -47,7 +47,7 @@ export const findUserById = (id) => getById(id);
 
 // --- CREATE / UPDATE ---
 export const createUser = async ({ name, email, password_hash }) => {
-  // NISN tidak lagi dipakai di jalur register.
+  // NISN diisi lewat proses lain; createUser hanya menetapkan field dasar.
   const payload = {
     name,
     email,

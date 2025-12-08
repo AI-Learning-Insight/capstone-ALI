@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/auth-context';
-import { Mail, Lock } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 
 function AuthShell({ title, children }) {
@@ -27,6 +27,7 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const nav = useNavigate();
   const { login } = useAuth();
@@ -56,9 +57,8 @@ export default function Login() {
       redirectByRole(role);
     } catch (e) {
       const msg =
-        e?.message ||
         e?.response?.data?.message ||
-        'Terjadi kesalahan saat memproses login. Silakan coba kembali.';
+        'Email atau kata sandi salah';
       setErr(msg);
       toast.error(msg);
     } finally {
@@ -102,7 +102,7 @@ export default function Login() {
           <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-900 shadow-sm focus-within:ring-2 focus-within:ring-blue-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
             <Lock size={16} className="text-slate-400 dark:text-slate-500" />
             <input
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               required
               autoComplete="current-password"
               className="w-full bg-transparent outline-none text-sm text-slate-900 placeholder-slate-400 dark:text-slate-100 dark:placeholder-slate-500"
@@ -110,6 +110,14 @@ export default function Login() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="********"
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              className="text-slate-500 hover:text-slate-700 focus:outline-none"
+              aria-label={showPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'}
+            >
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
           </div>
         </div>
 
@@ -121,17 +129,6 @@ export default function Login() {
         >
           {loading ? 'Memproses...' : 'Masuk'}
         </button>
-
-        {/* Link daftar */}
-        <p className="text-center text-sm text-slate-600 dark:text-slate-300">
-          Belum punya akun?{' '}
-          <Link
-            to="/register"
-            className="font-medium text-blue-600 hover:underline dark:text-blue-400"
-          >
-            Daftar
-          </Link>
-        </p>
       </form>
     </AuthShell>
   );

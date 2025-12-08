@@ -1,8 +1,8 @@
 # API Contract (MVP)
 
 ## Auth
-POST /auth/register {name,email,password} -> {token,user}
 POST /auth/login {email,password} -> {token,user}
+Registrasi publik dinonaktifkan; akun dibuat oleh admin/seed.
 
 ## Profile
 GET /me -> User
