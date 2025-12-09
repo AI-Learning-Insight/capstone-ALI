@@ -56,9 +56,16 @@ export default function Login() {
       toast.success('Berhasil login');
       redirectByRole(role);
     } catch (e) {
-      const msg =
-        e?.response?.data?.message ||
-        'Email atau kata sandi salah';
+      const status = e?.response?.status;
+      const backendMsg = e?.response?.data?.message || '';
+      const isAuthFail =
+        status === 400 ||
+        status === 401 ||
+        /invalid request payload input/i.test(backendMsg);
+
+      const msg = isAuthFail
+        ? 'Email atau kata sandi salah'
+        : backendMsg || 'Email atau kata sandi salah';
       setErr(msg);
       toast.error(msg);
     } finally {
