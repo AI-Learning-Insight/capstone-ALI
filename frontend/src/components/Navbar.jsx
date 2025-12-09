@@ -39,6 +39,7 @@ export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [showLogo, setShowLogo] = useState(true);
+  const isLoginPage = location.pathname === "/login";
 
   // Fallback baca token/user dari localStorage kalau context belum siap
   const tokenLS =
@@ -131,7 +132,7 @@ export default function Navbar() {
                 <LogOut className="h-4 w-4" />
                 Logout
               </button>
-            ) : (
+            ) : !isLoginPage ? (
               <Link
                 to="/login"
                 className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-300"
@@ -139,7 +140,7 @@ export default function Navbar() {
                 <LogIn className="h-4 w-4" />
                 Login
               </Link>
-            )}
+            ) : null}
           </div>
         </div>
 
@@ -159,7 +160,7 @@ export default function Navbar() {
             )}
           </button>
 
-          {!isAuth && (
+          {!isAuth && !isLoginPage && (
             <Link
               to="/login"
               className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:border-slate-600 dark:text-slate-100 dark:hover:bg-slate-800 dark:focus:ring-slate-600"
