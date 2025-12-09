@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchMentorOverview, fetchMentorMentees } from '../lib/api-mentor';
 import { useAuth } from '../lib/auth-context';
-import { Users2, Smartphone, Zap, AlertTriangle, Search } from 'lucide-react';
+import { Users2, Smartphone, Zap, AlertTriangle, Search, ChevronRight } from 'lucide-react';
 // Navbar dihapus
 import MentorMenteeRadar from '../features/mentor/MentorMenteeRadar.jsx';
 
@@ -198,20 +198,24 @@ function MenteeRow({ data }) {
   return (
     <div className="w-full rounded-2xl border bg-white hover:shadow transition px-4 py-3
                     border-slate-100 shadow-sm dark:bg-slate-900 dark:border-slate-800">
-      <div className="flex items-start gap-3">
+      <div className="flex flex-wrap items-start gap-3">
         <SmallAvatar name={data.name} email={data.email} src={data.avatar} />
-        <div className="flex-1">
+        <div className="flex-1 min-w-[180px]">
           <div className="text-[15px] font-semibold leading-tight">{data.name}</div>
           <div className="text-xs text-slate-500 dark:text-slate-400">{data.email}</div>
+          <div className="mt-1 sm:hidden">
+            <Badge style={data.style} />
+          </div>
         </div>
         <div className="hidden sm:block">
           <Badge style={data.style} />
         </div>
         <button
-          className="ml-3 text-xs font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-50 self-start mt-0.5"
+          className="ml-auto sm:ml-3 shrink-0 inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700 self-start"
           onClick={() => setOpen(v => !v)}
         >
-          {open ? 'Tutup ^' : 'Lihat ->'}
+          {open ? 'Tutup' : 'Lihat'}
+          <ChevronRight className={`h-3.5 w-3.5 transition-transform ${open ? 'rotate-90' : ''}`} />
         </button>
       </div>
 
@@ -427,7 +431,7 @@ export default function MentorDashboard() {
                 <span className="text-emerald-600">Student</span> Mentee Profile
               </div>
 
-              <div className="mb-3 flex items-center gap-2">
+              <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center">
                 <div className="relative flex-1">
                   <Search
                     size={16}
@@ -446,19 +450,21 @@ export default function MentorDashboard() {
                   />
                 </div>
 
-                <select
-                  value={styleFilter}
-                  onChange={(e) => setStyleFilter(e.target.value)}
-                  className="rounded-lg border px-3 py-2 text-sm text-slate-700 border-slate-200
-                             focus:outline-none focus:ring-2 focus:ring-indigo-500
-                             dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100"
-                >
-                  {STYLE_FILTER_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
+                <div className="sm:w-[200px]">
+                  <select
+                    value={styleFilter}
+                    onChange={(e) => setStyleFilter(e.target.value)}
+                    className="w-full rounded-lg border px-3 py-2 text-sm text-slate-700 border-slate-200
+                               focus:outline-none focus:ring-2 focus:ring-indigo-500
+                               dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100"
+                  >
+                    {STYLE_FILTER_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               <div className="space-y-3">
@@ -478,7 +484,7 @@ export default function MentorDashboard() {
                 )}
               </div>
 
-              <div className="mt-4 flex items-center justify-end gap-2">
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-2 sm:justify-end">
                 <button
                   className="px-3 py-1.5 rounded-lg border bg-white hover:bg-slate-50 disabled:opacity-50
                              dark:bg-slate-900 dark:border-slate-700 dark:hover:bg-slate-800"
