@@ -15,9 +15,12 @@ const STYLE_FILTER_OPTIONS = [
 ];
 
 // ---------- helpers ----------
+const API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
 const resolveAvatar = (url) => {
   if (!url) return null;
-  return /^https?:\/\//i.test(url) ? url : `${import.meta.env.VITE_API_URL}${url}`;
+  if (/^https?:\/\//i.test(url)) return url;
+  const clean = url.startsWith('/') ? url : `/${url}`;
+  return `${API_BASE}${clean}`;
 };
 
 const initialsOf = (s) => {
@@ -97,14 +100,23 @@ function BigAvatar({ name, email, src }) {
 }
 
 function SmallAvatar({ name, email, src }) {
+  const [broken, setBroken] = useState(false);
   const initials = initialsOf(name || email);
-  if (src) {
+  const resolved = !broken ? resolveAvatar(src) : null;
+
+  if (resolved) {
     return (
       <div className="w-12 h-12 rounded-lg overflow-hidden bg-slate-200 dark:bg-slate-700">
-        <img src={resolveAvatar(src)} alt="" className="w-full h-full object-cover" />
+        <img
+          src={resolved}
+          alt=""
+          className="w-full h-full object-cover"
+          onError={() => setBroken(true)}
+        />
       </div>
     );
   }
+
   return (
     <div className="w-12 h-12 rounded-lg grid place-items-center text-white font-semibold
                     bg-gradient-to-br from-emerald-400 to-green-600">
