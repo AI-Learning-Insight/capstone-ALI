@@ -47,6 +47,15 @@ export function formatMenteeCode(userOrId, opts = {}) {
 
   if (!userOrId) return '-';
 
+  // Khusus mentor: tampilkan kode kelas mentor yang konsisten
+  if (typeof userOrId === 'object') {
+    const role = String(userOrId.role || '').toLowerCase();
+    if (role === 'mentor') {
+      // Gunakan class_code jika ada, fallback ke label tetap
+      return userOrId.class_code || 'MENTOR ML - 1';
+    }
+  }
+
   if (typeof userOrId === 'object' && userOrId.class_code) {
     return userOrId.class_code;
   }

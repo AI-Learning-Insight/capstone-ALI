@@ -662,19 +662,53 @@ export default function Dashboard() {
       }
     }
 
+    const toNum = (v) => {
+      const n = Number(v);
+      return Number.isFinite(n) ? n : null;
+    };
+
+    const avgSubmission = toNum(feat.avg_submission_rating ?? feat.avg_completion_rating);
+    const avgExam = toNum(feat.avg_exam_score);
+    const passRate = toNum(feat.exam_pass_rate ?? feat.pass_rate); // 0-1
+    const totalModules = toNum(feat.total_completed_modules ?? feat.tutorials_completed ?? feat.enrollments_count);
+    const avgTimeRaw = toNum(feat.avg_time_to_complete ?? feat.avg_study_duration ?? feat.study_minutes);
+    const activeDays = toNum(feat.active_days ?? feat.last_active_days);
+
+    // Jika avg_time besar kemungkinan menit -> konversi jam agar narasi sesuai
+    let avgTimeHours = avgTimeRaw;
+    if (avgTimeRaw != null && avgTimeRaw > 30) {
+      avgTimeHours = avgTimeRaw / 60;
+    }
+
+    const fmt = (v, d = 2) => (v == null ? "-" : Number(v).toFixed(d));
+    const fmtInt = (v) => (v == null ? "-" : Math.round(v));
+    const fmtPct = (v) => {
+      if (v == null) return "-";
+      const pct = v > 1 ? v : v * 100;
+      return `${Math.round(pct)}%`;
+    };
+
     let title = `Kamu adalah ${learnerTypeText}!`;
     let body =
       "Berdasarkan pola belajarmu, tetap jaga ritme belajar yang nyaman dan lanjutkan progres secara konsisten.";
 
     if (learnerTypeCode === "FAST") {
-      body =
-        "Kamu bergerak cepat menyelesaikan materi. Tambahkan sesi review 10-15 menit setelah belajar dan gunakan catatan singkat agar pemahaman makin kuat.";
-    } else if (learnerTypeCode === "REFLECTIVE") {
-      body =
-        "Kamu suka mencerna materi dengan tenang. Fokus pada satu topik per sesi, tulis 3 poin utama, lalu jadwalkan latihan singkat keesokan harinya.";
+      body = `Kamu adalah Fast Learner karena kamu menunjukkan kecepatan luar biasa dalam menyelesaikan modul (rata-rata waktu untuk menyelesaikan: ${fmt(avgTimeHours)} jam) dan telah menyelesaikan sejumlah besar modul (${fmtInt(totalModules)} modul).`;
+      if (avgSubmission != null && avgSubmission < 2.0 || avgExam != null && avgExam < 70.0) {
+        body += ` Namun, perlu diperhatikan bahwa rata-rata nilai submissionmu (${fmt(avgSubmission)}) dan skor ujianmu (${fmt(avgExam)}) cenderung lebih rendah. Hal ini menunjukkan kecepatan mungkin mengorbankan pemahaman mendalam. Saran: Coba luangkan lebih banyak waktu untuk memahami materi sebelum melangkah ke modul berikutnya dan manfaatkan fitur review untuk memperkuat konsep.`;
+      } else {
+        body += " Kecepatanmu ini sangat baik! Saran: Terus pertahankan ritme belajarmu dan coba tantang dirimu dengan modul-modul yang lebih kompleks.";
+      }
     } else if (learnerTypeCode === "CONSISTENT") {
-      body =
-        "Kamu menjaga ritme stabil. Pertahankan target harian atau mingguan (misal 2-3 modul) dan hindari menumpuk tugas di akhir.";
+      body = `Kamu adalah Consistent Learner karena kamu aktif belajar secara teratur (aktif selama ${fmtInt(activeDays)} hari), menyelesaikan modul dalam jumlah yang baik (${fmtInt(totalModules)} modul), dan menunjukkan performa yang solid dalam submission (rata-rata rating: ${fmt(avgSubmission)}) serta ujian (rata-rata skor: ${fmt(avgExam)}).`;
+      if ((avgExam != null && avgExam >= 85.0) && (passRate != null && passRate >= 0.9)) {
+        body += " Performa belajarmu sangat impresif! Saran: Kamu bisa mencoba menjadi mentor atau berbagi pengetahuan dengan sesama pembelajar untuk memperdalam pemahamanmu.";
+      } else {
+        body += " Kamu memiliki keseimbangan yang baik antara menyelesaikan modul dan memahami materi. Saran: Terus pertahankan pola belajarmu ini! Jika ada modul yang terasa lebih sulit, jangan ragu untuk mengulanginya atau mencari sumber belajar tambahan.";
+      }
+    } else if (learnerTypeCode === "REFLECTIVE") {
+      body = `Kamu adalah Reflective Learner karena aktivitas belajarmu masih terbatas. Data menunjukkan kamu baru sedikit menyelesaikan modul (${fmtInt(totalModules)} modul) dan belum banyak berinteraksi dengan fitur submission atau ujian.`;
+      body += " Ini bisa berarti kamu masih dalam tahap awal eksplorasi atau membutuhkan dorongan untuk memulai. Saran: Jangan ragu untuk mencoba modul-modul awal yang paling menarik minatmu. Fokus pada satu modul hingga selesai untuk mendapatkan momentum. Jika kamu merasa kesulitan, ada banyak sumber daya dan komunitas yang siap membantumu!";
     }
 
     return { title, body };

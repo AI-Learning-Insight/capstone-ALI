@@ -6,6 +6,7 @@ import {
   Lock, Info, Save
 } from "lucide-react";
 import Card from "../components/ui/Card";
+import Badge from "../components/ui/Badge";
 import { useAuth } from "../lib/auth-context";
 import api, { publicUrl } from "../lib/api";
 import { notify } from "../lib/notify"; // -> Sonner helper
@@ -113,7 +114,9 @@ export default function ProfileSecurity() {
                 <h2 className="mt-4 text-xl font-semibold text-slate-900 dark:text-slate-50">
                   {profile.name}
                 </h2>
-                <p className="text-slate-500 dark:text-slate-300">{profile.role}</p>
+                <div className="mt-1">
+                  <Badge intent="info">{profile.role}</Badge>
+                </div>
 
                 <div className="w-full mt-4 space-y-2 text-left">
                   <div className="flex items-center gap-3 text-slate-600 dark:text-slate-300">
