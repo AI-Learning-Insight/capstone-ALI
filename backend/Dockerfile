@@ -8,7 +8,7 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 
 # Install dependencies (devDependencies tetap disertakan agar perintah migrasi/knex tersedia)
-RUN npm ci
+RUN npm install
 
 # Copy semua source code backend
 COPY . .
