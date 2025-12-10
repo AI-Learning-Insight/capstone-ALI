@@ -1,8 +1,8 @@
 FROM node:20-alpine
 WORKDIR /usr/src/app
 
-# salin deps dari folder backend
-COPY backend/package*.json ./
+# salin file dependensi backend
+COPY backend/package.json backend/package-lock.json ./
 RUN npm ci
 
 # salin seluruh kode backend (termasuk migrations chat)
