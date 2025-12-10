@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";          // = StudentDashboard
 import MentorDashboard from "./pages/MentorDashboard";
 import ProfileInfo from "./pages/ProfileInfo";
 import ProfileSecurity from "./pages/ProfileSecurity";
+import Chat from "./pages/Chat";
 import Todos from "./pages/Todos";
 import Assessment from "./pages/Assessment";
 import MentorProfile from "./pages/MentorProfile";
@@ -57,6 +58,14 @@ export default createBrowserRouter([
           { path: "todos", element: <Todos /> },
           { path: "assessment", element: <Assessment /> },
         ],
+      },
+      {
+        path: "chat",
+        element: (
+          <ProtectedRoute roles={["student", "mentor", "admin"]}>
+            <Chat />
+          </ProtectedRoute>
+        ),
       },
 
       // Private + cek role

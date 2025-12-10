@@ -7,6 +7,7 @@ import dashboard from './dashboard.routes.js';
 import predict from './predict.routes.js';
 import ml from './ml.routes.js';
 import mentorRoutes from './mentor.routes.js';
+import chatRoutes from './chat.routes.js';
 
 export default [
   ...health,
@@ -18,4 +19,5 @@ export default [
   ...predict,
   ...ml,
   ...mentorRoutes,
+  ...chatRoutes,
 ];

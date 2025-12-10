@@ -30,6 +30,7 @@ services:
       # mode dev
       NODE_ENV: development
       PORT: 8080
+      DATABASE_SSL: "false"
 
       # JWT & auth
       JWT_SECRET: super_dev_secret_change_me

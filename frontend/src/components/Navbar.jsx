@@ -9,9 +9,11 @@ import {
   LogOut,
   Moon,
   Sun,
+  MessageCircle,
 } from "lucide-react";
 import { useAuth } from "../lib/auth-context";
 import { useTheme } from "../lib/theme-context"; // TAMBAH INI
+import { fetchChatUnreadTotal } from "../lib/api-chat";
 
 function NavItem({ to, children, icon: Icon }) {
   return (
@@ -36,6 +38,7 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const { user, logout } = useAuth?.() || {}; // aman kalau hook berbeda
   const { theme, toggleTheme } = useTheme(); // AMBIL TEMA & TOGGLE
+  const [unreadChat, setUnreadChat] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
   const [showLogo, setShowLogo] = useState(true);
@@ -77,6 +80,30 @@ export default function Navbar() {
     }
   };
 
+  // polling ringan unread chat
+  useEffect(() => {
+    let timer;
+    const loadUnread = async () => {
+      if (!isAuth) {
+        setUnreadChat(0);
+        return;
+      }
+      try {
+        const total = await fetchChatUnreadTotal();
+        setUnreadChat(total);
+      } catch (err) {
+        console.warn("fetch chat unread failed", err);
+      }
+    };
+    loadUnread();
+    if (isAuth) {
+      timer = setInterval(loadUnread, 12000);
+    }
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [isAuth]);
+
   return (
     <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/80 backdrop-blur dark:border-slate-800 dark:bg-slate-900/80">
       {/* HAPUS max-w-7xl & mx-auto supaya full width */}
@@ -106,6 +133,18 @@ export default function Navbar() {
           {isAuth && (
             <NavItem to={dashboardPath} icon={LayoutDashboard}>
               Dashboard
+            </NavItem>
+          )}
+          {isAuth && (
+            <NavItem to="/chat" icon={MessageCircle}>
+              <span className="relative inline-flex items-center gap-1">
+                Chat
+                {unreadChat > 0 && (
+                  <span className="inline-flex h-5 min-w-[18px] items-center justify-center rounded-full bg-rose-500 px-1 text-[11px] font-semibold text-white">
+                    {unreadChat > 99 ? "99+" : unreadChat}
+                  </span>
+                )}
+              </span>
             </NavItem>
           )}
 
@@ -189,6 +228,16 @@ export default function Navbar() {
           <div className="space-y-1 border-t border-slate-200 bg-white px-4 pb-4 pt-2 dark:border-slate-800 dark:bg-slate-900">
             <NavItem to={dashboardPath} icon={LayoutDashboard}>
               Dashboard
+            </NavItem>
+            <NavItem to="/chat" icon={MessageCircle}>
+              <span className="relative inline-flex items-center gap-1">
+                Chat
+                {unreadChat > 0 && (
+                  <span className="inline-flex h-5 min-w-[18px] items-center justify-center rounded-full bg-rose-500 px-1 text-[11px] font-semibold text-white">
+                    {unreadChat > 99 ? "99+" : unreadChat}
+                  </span>
+                )}
+              </span>
             </NavItem>
 
             <button
