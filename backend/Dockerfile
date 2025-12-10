@@ -7,8 +7,8 @@ WORKDIR /usr/src/app
 # Copy file package (build context sudah di-set ke ./backend)
 COPY package*.json ./
 
-# Install 
-RUN npm Install
+# Install dependencies (devDependencies tetap disertakan agar perintah migrasi/knex tersedia)
+RUN npm ci
 
 # Copy semua source code backend
 COPY . .
