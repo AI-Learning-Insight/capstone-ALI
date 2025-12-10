@@ -5,7 +5,7 @@ FROM node:20-alpine
 WORKDIR /usr/src/app
 
 # Copy file package (build context sudah di-set ke ./backend)
-COPY package*.json ./
+COPY backend/package*.json ./
 
 # Install dependencies (devDependencies tetap disertakan agar perintah migrasi/knex tersedia)
 RUN npm ci
