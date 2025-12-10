@@ -2,8 +2,8 @@ FROM node:20-alpine
 
 WORKDIR /usr/src/app
 
-# Pastikan kedua file ini ada di /backend lalu di-copy
-COPY package.json package-lock.json ./
+# Copy file package (build context sudah di-set ke ./backend)
+COPY package*.json ./
 
 # Install dependencies pakai lockfile
 RUN npm ci
